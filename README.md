@@ -4,25 +4,8 @@ Lab Experiments for Computational Linguistics and Natural Language Processing.
 
 ## Directory Structure
 
-- [Experiment-1/](Experiment-1)
-  - [employee_information_100.csv](Experiment-1/employee_information_100.csv) - Employee dataset used for Experiment-1.
-  - [experiment1.1.ipynb](Experiment-1/experiment1.1.ipynb) - Average salary of each department (Bar Chart).
-  - [experiment1.2.ipynb](Experiment-1/experiment1.2.ipynb) - Employee count per department.
-  - [experiment1.3.ipynb](Experiment-1/experiment1.3.ipynb) - Gender ratio visualization (Pie Chart).
-  - [experiment1.4.ipynb](Experiment-1/experiment1.4.ipynb) - Salary distribution (Histogram).
-  - [experiment1.5.ipynb](Experiment-1/experiment1.5.ipynb) - Experience vs Salary relationship (Scatter Plot).
-  - [experiment1.6.ipynb](Experiment-1/experiment1.6.ipynb) - Top 10 highest-paid employees.
-  - [experiment1.7.ipynb](Experiment-1/experiment1.7.ipynb) - Highest salary per department.
-  - [experiment1.8.ipynb](Experiment-1/experiment1.8.ipynb) - Employees earning more than the overall average.
-  - [experiment1.9.ipynb](Experiment-1/experiment1.9.ipynb) - Average experience per department.
-  - [experiment1.10.ipynb](Experiment-1/experiment1.10.ipynb) - Age distribution (Histogram).
-- [Experiment-2/](Experiment-2)
-  - [2.1_text_data.txt](Experiment-2/2.1_text_data.txt) - Sample text file for preprocessing.
-  - [2.1.ipynb](Experiment-2/2.1.ipynb) - Text preprocessing (lowercasing, punctuation, number, and whitespace removal).
-  - [2.2_tokenization_data.txt](Experiment-2/2.2_tokenization_data.txt) - Sample text file for tokenization.
-  - [2.2.ipynb](Experiment-2/2.2.ipynb) - Word and Sentence Tokenization (NLTK, spaCy, and custom implementation).
-  - [2.3_clean_data.txt](Experiment-2/2.3_clean_data.txt) - Sample text file for stop words removal.
-  - [2.3.ipynb](Experiment-2/2.3.ipynb) - Tokenization and Stop Word Removal.
+- [Experiment-1/](Experiment-1) - Data Exploration and Visualization notebooks and datasets.
+- [Experiment-2/](Experiment-2) - Natural Language Processing (NLP) Foundations notebooks and datasets.
 - [LICENSE](LICENSE) - License documentation.
 - [README.md](README.md) - This documentation.
 

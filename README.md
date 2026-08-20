@@ -1,11 +1,11 @@
-# CLNLP-AIML
+# Computational Linguistics and Natural Language Processing (CLNLP) - AIML
 
 Lab Experiments for Computational Linguistics and Natural Language Processing.
 
 ## Directory Structure
 
-- [Experiment-1/](Experiment-1) - Data Exploration and Visualization notebooks and datasets.
-- [Experiment-2/](Experiment-2) - Natural Language Processing (NLP) Foundations notebooks and datasets.
+- [Experiment-1/](Experiment-1) - Data Exploration and Visualization notebooks and datasets. For an in-depth breakdown of each notebook, see the **[Experiment 1 Detailed README](Experiment-1/README.md)**.
+- [Experiment-2/](Experiment-2) - Natural Language Processing (NLP) Foundations notebooks and datasets. For an in-depth breakdown of each notebook, see the **[Experiment 2 Detailed README](Experiment-2/README.md)**.
 - [LICENSE](LICENSE) - License documentation.
 - [README.md](README.md) - This documentation.
 
@@ -14,6 +14,7 @@ Lab Experiments for Computational Linguistics and Natural Language Processing.
 ## Experiments Details
 
 ### Experiment-1: Data Exploration and Visualization
+*For a complete guide on how to run these, refer to the [Experiment-1 README](Experiment-1/README.md).*
 
 Using the sample dataset [employee_information_100.csv](Experiment-1/employee_information_100.csv), these notebooks cover:
 * **[1.1: Average Salary by Department](Experiment-1/experiment1.1.ipynb)**: Calculates the average salary per department and plots a bar chart.
@@ -28,6 +29,7 @@ Using the sample dataset [employee_information_100.csv](Experiment-1/employee_in
 * **[1.10: Age Distribution](Experiment-1/experiment1.10.ipynb)**: Displays employee age distribution using a histogram.
 
 ### Experiment-2: Natural Language Processing (NLP) Foundations
+*For a complete guide on how to run these, refer to the [Experiment-2 README](Experiment-2/README.md).*
 
 Using clean text datasets, these notebooks cover:
 * **[2.1: Basic Text Preprocessing](Experiment-2/2.1.ipynb)**: Converts text to lowercase, removes punctuation, numbers, and extra whitespace, displaying basic counts and cleaning statistics.

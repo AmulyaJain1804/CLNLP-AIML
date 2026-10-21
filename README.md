@@ -1,4 +1,4 @@
-﻿# Computational Linguistics and Natural Language Processing (CLNLP) - AIML
+# Computational Linguistics and Natural Language Processing (CLNLP) - AIML
 
 Lab Experiments for Computational Linguistics and Natural Language Processing.
 
@@ -8,7 +8,7 @@ Lab Experiments for Computational Linguistics and Natural Language Processing.
 - [Experiment-2/](Experiment-2) - Natural Language Processing (NLP) Foundations notebooks and datasets. For an in-depth breakdown of each notebook, see the **[Experiment 2 Detailed README](Experiment-2/README.md)**.
 - [Experiment-3/](Experiment-3) - Stemming, Lemmatization, and Regular Expressions. For an in-depth breakdown, see the **[Experiment 3 Detailed README](Experiment-3/README.md)**.
 - [Experiment-4/](Experiment-4) - Term-Frequency Analysis, Named Entity Recognition, and TF-IDF. For an in-depth breakdown, see the **[Experiment 4 Detailed README](Experiment-4/README.md)**.
-- [Experiment-5/](Experiment-5) - Subword Tokenization using Byte Pair Encoding (BPE). For an in-depth breakdown, see the **[Experiment 5 Detailed README](Experiment-5/README.md)**.
+- [Experiment-5/](Experiment-5) - Subword Tokenization (BPE & SentencePiece), POS Tagging, and Word2Vec. For an in-depth breakdown, see the **[Experiment 5 Detailed README](Experiment-5/README.md)**.
 - [LICENSE](LICENSE) - License documentation.
 - [README.md](README.md) - This documentation.
 
@@ -55,11 +55,17 @@ Using a comprehensive NLP textbook-style passage, these experiments cover:
 * **[4.2: TF Analysis without Toolkit](Experiment-4/main.ipynb)**: Implements the same term-frequency analysis using only Python built-ins (`re`, `csv`, dictionary), with manual lowercasing, regex-based word extraction, and frequency sorting.
 * **[4.3: TF-IDF from Scratch](Experiment-4/main.ipynb)**: Computes TF, DF, IDF, and TF-IDF scores for multiple documents without any NLP library, and identifies the top 10 terms by TF-IDF score per document.
 
-### Experiment-5: Subword Tokenization using Byte Pair Encoding (BPE)
+### Experiment-5: Subword Tokenization, POS Tagging & Word2Vec
 *For a complete guide on how to run these, refer to the [Experiment-5 README](Experiment-5/README.md).*
 
-Using an NLP corpus on tokenization and language models, this experiment covers:
-* **[5: BPE Subword Tokenization from Scratch](Experiment-5/main.ipynb)**: Implements the Byte Pair Encoding algorithm without any pre-trained tokenizer — learning subword merge rules from the corpus, building a vocabulary, tokenizing unseen words, assigning token IDs, and evaluating tokenizer statistics across different numbers of merge steps.
+Using [input_sub_word_data.txt](Experiment-5/input_sub_word_data.txt) and a separate Word2Vec corpus (`corpus.txt`, not included), the notebook [Experiment_5.ipynb](Experiment-5/Experiment_5.ipynb) covers:
+* **5.1: BPE Tokenization**: Pretrained GPT-2 tokenizer (`transformers`) vs. a from-scratch BPE with 50 merge steps, showing tokens and token IDs.
+* **5.2: SentencePiece Tokenization**: Pretrained `mt5-small` model vs. a unigram model trained on the input text (`vocab_size=494`).
+* **5.3: POS Tagging**: Tags a sample sentence using spaCy and NLTK, with tag descriptions.
+* **5.4: POS Tagging with Frequency**: spaCy POS tags, descriptions, and token frequencies for the input text.
+* **5.5: Word2Vec CBOW**: Trains CBOW with `gensim`, shows the vector for "learning" and its 3 most similar words.
+* **5.6: Word2Vec Skip-Gram**: Trains Skip-Gram, shows the vector for "language" and its 5 most similar words.
+* **5.7: Cosine Similarity**: Computes similarity between word pairs (machine–learning, natural–language, deep–learning).
 
 ---
 
@@ -72,10 +78,13 @@ Ensure you have the following packages installed:
 * jupyter
 * nltk
 * spacy
+* transformers (Experiment 5)
+* sentencepiece (Experiment 5)
+* gensim (Experiment 5)
 
 To install the dependencies, you can run:
 ```bash
-pip install pandas matplotlib jupyter nltk spacy
+pip install pandas matplotlib jupyter nltk spacy transformers sentencepiece gensim
 python -m spacy download en_core_web_sm
 ```
 

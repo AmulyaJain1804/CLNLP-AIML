@@ -1,0 +1,40 @@
+{
+  "pair": "en-lus",
+  "n_real_train": 46369,
+  "mono_pool_size": 153759,
+  "n_synthetic": 46369,
+  "synthetic_ratio": 1.0,
+  "generator": "baseline en-lus, beam 4",
+  "generation_time_s": 125.2,
+  "roundtrip_chrf++": 26.77,
+  "roundtrip_bleu": 9.57,
+  "roundtrip_sample": 500,
+  "avg_len_ratio_syn_over_src": 0.9,
+  "examples": [
+    {
+      "en": "In the name of Jesus , get up and walk ! ’",
+      "syn": "Isua hmingah chuan kal ula , kal rawh u , ” a ti a .",
+      "roundtrip": "Go into the name of Jesus , and go . \""
+    },
+    {
+      "en": "Malaria is carried by mosquitoes",
+      "syn": "Malaria chu bana zâwn a ni",
+      "roundtrip": "Malriri was opposite the post"
+    },
+    {
+      "en": "The North East Monsoon brings light rainfall during the months of September , October , November and December .",
+      "syn": "India ram North America mite chuan September thla , September thla chhûnga ruah sûr , September thla , November leh December te a thlen a .",
+      "roundtrip": "The North America of India brought the rain of September, September, September, September, September, September, and December of Novevevember ."
+    },
+    {
+      "en": "Tom was so sweet",
+      "syn": "lái",
+      "roundtrip": "To dig, pot"
+    },
+    {
+      "en": "Singling out those who were put to death by Jehovah because they committed fornication , Paul gave the number as 23 ,000 . — 1 Corinthians 10 : 8 .",
+      "syn": "Chutianga an tiha , Paulan an inngaih avângin thihna a pe a ni . —1 Korinth 10:2 .",
+      "roundtrip": "In doing so, Paul gave death because of their sexual immorality . — 1 Corinthians 10 : 2 ."
+    }
+  ]
+}

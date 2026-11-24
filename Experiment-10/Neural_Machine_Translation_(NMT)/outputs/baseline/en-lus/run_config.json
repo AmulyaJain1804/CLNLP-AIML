@@ -1,0 +1,69 @@
+{
+  "config": {
+    "model_name": "baseline",
+    "direction": "en-lus",
+    "pair": "en-lus",
+    "model_args": {
+      "vocab_size": 8000,
+      "d_model": 256,
+      "n_heads": 4,
+      "ff_dim": 1024,
+      "enc_layers": 4,
+      "dec_layers": 4,
+      "dropout": 0.3,
+      "attn_dropout": 0.1,
+      "max_positions": 512
+    },
+    "train": {
+      "max_tokens": 6000,
+      "max_len": 200,
+      "lr": 0.0007,
+      "warmup_steps": 2000,
+      "betas": [
+        0.9,
+        0.98
+      ],
+      "weight_decay": 0.0001,
+      "label_smoothing": 0.1,
+      "clip_norm": 1.0,
+      "max_steps": 20000,
+      "max_epochs": 120,
+      "eval_every": 1000,
+      "patience": 6
+    },
+    "decode": {
+      "beam": 5,
+      "len_penalty": 1.0,
+      "max_len_a": 1.5,
+      "max_len_b": 10,
+      "batch_size": 64
+    },
+    "train_frac": 1.0,
+    "n_train_real": 46369,
+    "n_train_synthetic": 0,
+    "synthetic_files": null,
+    "tagged_bt": false,
+    "n_params": 9421824,
+    "spm": "/kaggle/working/project/data/processed/en-lus/spm.model",
+    "amp_dtype": "torch.bfloat16",
+    "device": "cuda"
+  },
+  "seed": 42,
+  "hardware": {
+    "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "python": "3.13.16",
+    "cpu_count": 12,
+    "torch": "2.14.1+cu130",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "gpu_mem_gb": 42.4
+  },
+  "git_commit": "unavailable (no git repo at run time)",
+  "started_at": "2026-11-17 13:22:08",
+  "wall_clock_s": 944.1,
+  "best_dev_chrf_greedy": 38.21006618707822,
+  "dev_chrf_beam": 39.430041667144295,
+  "steps": 20000,
+  "epochs": 77,
+  "decode_time_s": 13.2,
+  "finished": true
+}

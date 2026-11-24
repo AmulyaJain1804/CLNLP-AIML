@@ -1,0 +1,29 @@
+# ---- environment / tooling ----
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+.playwright-mcp/
+
+# ---- data: WMT26 release, no redistribution; rebuilt with `bash run.sh data` + `bash run.sh preprocess` ----
+/data/
+
+# ---- build artefacts ----
+/dist/
+/results/
+
+# ---- training artefacts (large or regenerable) ----
+# checkpoints (~800 MB); NLLB checkpoints were never saved
+outputs/**/*.pt
+outputs/**/checkpoint*
+# raw stdout of every GPU job; run_config.json + train_log.csv hold the same facts
+outputs/logs/
+# synthetic back-translation corpora (~19 MB, derived from the release); quality.json is kept
+outputs/synthetic/*/mono.en
+outputs/synthetic/*/syn.*
+# dev-set decodes; only test.hyp is needed for evaluation
+outputs/**/dev.hyp
+outputs/**/zeroshot_dev.hyp
+
+# ---- not part of the codebase ----
+/Low_Resource_NMT_Coding_Agent_Prompt.pdf

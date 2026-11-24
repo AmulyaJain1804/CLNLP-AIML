@@ -1,0 +1,40 @@
+{
+  "pair": "en-bodo",
+  "n_real_train": 11272,
+  "mono_pool_size": 186726,
+  "n_synthetic": 11272,
+  "synthetic_ratio": 1.0,
+  "generator": "baseline en-bodo, beam 4",
+  "generation_time_s": 34.1,
+  "roundtrip_chrf++": 25.4,
+  "roundtrip_bleu": 4.44,
+  "roundtrip_sample": 500,
+  "avg_len_ratio_syn_over_src": 0.995,
+  "examples": [
+    {
+      "en": "These creatures include endangered species, like the Sumatran rhinoceros, Malayan tiger, tapirs and elephants.",
+      "syn": "बे जिबफोराव बरफनि हारिसाफोर दं, जेरै साम्बान, टेंकर आरो मैदेर बायदि हारिसाफोरनि हारिसाफोर दं।",
+      "roundtrip": "This includes ice tribes such as zambis, such as rankan, tankar, and elect species."
+    },
+    {
+      "en": "On the first day of Navratri , we pray to Maa Shailputri .",
+      "syn": "नारात्रिनि गिबि सानआव, जों मारातखौ महेल खालामनो थाखाय जों परारातनि गिबि सान लादोंमोन।",
+      "roundtrip": "NATratri's first day, we take first day for Maratri Mahala to be Mahalah."
+    },
+    {
+      "en": "Is Tom going with you?",
+      "syn": "आं नोंजों थाङो?",
+      "roundtrip": "I go with you go?"
+    },
+    {
+      "en": "We knew one day it would happen",
+      "syn": "जों बेखौ मोनसे साननै जागोन।",
+      "roundtrip": "We would have two days."
+    },
+    {
+      "en": "Near the entrance of the little Rann of Kutch wild sanctuary, the safari resort, Rann Raiders is imaginatively designed and comprises cottages resembling the village houses of Kutch and Saurashtra.",
+      "syn": "कुटालाब केचेरीनि एसे रानस्राव, क'चरी आरो राफ्टरीनि रानग्राफोरा ज' जायो, जेराव राध्रनि क'र आरो रासा आयेन दाग्राफोरखौ डिजाइन खालामनाय जायो।",
+      "roundtrip": "The annual runs of Kubachi, cotchie, and Rafri are designed at designs of Ratch, where Ratchy Ratch and Ratwdha."
+    }
+  ]
+}

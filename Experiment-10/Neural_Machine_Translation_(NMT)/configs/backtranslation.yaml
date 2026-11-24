@@ -1,0 +1,11 @@
+# M4 advanced model B: synthetic parallel data from the baseline models.
+# English monolingual pool = English side of the OTHER pairs' official training data
+# (constrained: no external data), deduplicated, minus anything in this pair's train/dev/test.
+seed: 42
+synthetic_ratio: 1.0        # synthetic sentences = ratio x real training pairs (capped by pool size)
+min_words: 3
+max_words: 80
+generator_beam: 4           # beam search (Edunov et al. 2018: beam > sampling in low-resource settings)
+generator_batch_size: 128
+roundtrip_sample: 500       # sentences scored by round-trip chrF++ as a quality estimate
+tag: true                   # tagged back-translation (<BT> on the synthetic side's source; Caswell et al. 2019)

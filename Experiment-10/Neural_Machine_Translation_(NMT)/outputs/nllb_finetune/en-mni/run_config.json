@@ -1,0 +1,57 @@
+{
+  "config": {
+    "model_name": "nllb_finetune",
+    "direction": "en-mni",
+    "pair": "en-mni",
+    "pretrained": "facebook/nllb-200-distilled-600M",
+    "src_code": "eng_Latn",
+    "tgt_code": "mni_Beng",
+    "proxy_language_tag": false,
+    "train": {
+      "batch_size": 4,
+      "grad_accum": 8,
+      "max_len": 128,
+      "lr": 5e-05,
+      "warmup_steps": 300,
+      "weight_decay": 0.0,
+      "label_smoothing": 0.1,
+      "clip_norm": 1.0,
+      "max_epochs": 3,
+      "max_steps": 4500,
+      "eval_every": 324,
+      "dev_gen_sentences": 300,
+      "patience": 4,
+      "gradient_checkpointing": false
+    },
+    "decode": {
+      "beam": 4,
+      "batch_size": 32,
+      "max_new_tokens": 256
+    },
+    "n_train": 20759,
+    "total_steps": 1947,
+    "amp_dtype": "torch.bfloat16",
+    "device": "cuda",
+    "n_params": 615073792
+  },
+  "seed": 42,
+  "hardware": {
+    "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "python": "3.13.16",
+    "cpu_count": 12,
+    "torch": "2.14.1+cu130",
+    "gpu": "NVIDIA L4",
+    "gpu_mem_gb": 23.7
+  },
+  "git_commit": "unavailable (no git repo at run time)",
+  "started_at": "2026-11-24 10:49:39",
+  "wall_clock_s": 3628.8,
+  "zeroshot_dev_chrf": 40.7254310156396,
+  "zeroshot_dev_bleu": 10.461794268240787,
+  "best_dev_chrf_subset": 55.300231454449964,
+  "dev_chrf_beam": 55.882417574574625,
+  "steps": 1946,
+  "epochs": 3,
+  "decode_time_s": 139.0,
+  "finished": true
+}

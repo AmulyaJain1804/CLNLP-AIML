@@ -1,0 +1,40 @@
+{
+  "pair": "en-as",
+  "n_real_train": 48521,
+  "mono_pool_size": 151377,
+  "n_synthetic": 48521,
+  "synthetic_ratio": 1.0,
+  "generator": "baseline en-as, beam 4",
+  "generation_time_s": 133.8,
+  "roundtrip_chrf++": 26.43,
+  "roundtrip_bleu": 8.57,
+  "roundtrip_sample": 500,
+  "avg_len_ratio_syn_over_src": 0.808,
+  "examples": [
+    {
+      "en": "However , after I am raised up , I will go before you into Galilee . \"",
+      "syn": "কিন্তু মই নষ্ট হোৱাৰ পাছত , মই তোমালোকৰ আগে গালীললৈ যাম ।",
+      "roundtrip": "But I will go into Galilee , and I will go before you ."
+    },
+    {
+      "en": "Stop trusting in man , whose breath is in his nostrils ; for of what account is he ?",
+      "syn": "মানুহৰ নিশ্বাসত ভাৰসা ৰাখা , আৰু তেওঁৰ একো নাই নে ?",
+      "roundtrip": "Is there any breath in the breath of man , and trust in him ?"
+    },
+    {
+      "en": "I'm thinking about it",
+      "syn": "মই ভাবিছো যে ই তাৰ বিষয়ে চিন্তা কৰোঁ",
+      "roundtrip": "I think that I think about it"
+    },
+    {
+      "en": "Then there shall be a place which the Lord your God shall choose to cause his name to dwell there ; thither shall ye bring all that I command you ; your burnt offerings , and your sacrifices , your tithes , and the heave offering of your hand , and all your choice vows which ye vow unto the Lord :",
+      "syn": "তেতিয়া আপোনালোকৰ ঈশ্বৰ যিহোৱাই যি ঠাইত বাস কৰিব , সেই ঠাইলৈ আপোনালোকৰ ঈশ্বৰ যিহোৱাৰ উদ্দেশ্যে যি যি যি ঠাইলৈ আনিব , সেই ঠাইলৈ তোমালোকক সেই ঠাইলৈ আনিব , সেই ঠাইলৈ আনিব ; আৰু মই তোমালোকৰ হোম-বলি আৰু তোমালোকৰ যি যি যি যি যি যি যি যি যি যি যি ঠাইত তাক লৈ আনিম , সেই ঠাইত তোমালোকক দিব , সেই ঠাইলৈ আনিব ।",
+      "roundtrip": "And thou shalt go into the place where the Lord thy God dwelleth unto thee , and bring it into the place where I will bring thee , and whithersoever the Lord thy God dieth ."
+    },
+    {
+      "en": "Dan , and Naphtali , Gad , and Asher .",
+      "syn": "দান , নপ্তালী , নপ্তালী , গাদ , আচেৰ আৰু আচেৰ ।",
+      "roundtrip": "Dan , Naphtali , Naphtali , Naphtali , and Asher , and Asher ."
+    }
+  ]
+}

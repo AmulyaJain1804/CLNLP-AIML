@@ -1,0 +1,5 @@
+# Extra packages for the Kaggle / Colab GPU notebooks (torch + CUDA are preinstalled there).
+sentencepiece==0.2.3
+sacrebleu==2.6.0
+pyyaml==6.0.3
+transformers==5.23.0

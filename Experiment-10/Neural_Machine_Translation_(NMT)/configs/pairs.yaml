@@ -1,0 +1,119 @@
+# Language pairs of the WMT26 Indic MT shared task (training data release 2026).
+# All pairs are English <-> X. `file` is relative to data/raw/_original/training_2026/.
+# `header`: whether the first spreadsheet row is a header row.
+# `en_col` / `x_col`: 0-based column index of the English / X side.
+# `selected`: pairs we train models for (compute budget, see docs/task_notes.md).
+# `nllb_code`: language tag used for NLLB-200. Bodo is NOT in NLLB-200, so we
+#              borrow hin_Deva (same script) as a proxy tag (documented assumption).
+
+seed: 42
+split:
+  dev_frac: 0.05
+  dev_max: 1000
+  test_frac: 0.05
+  test_max: 2000
+
+pairs:
+  en-as:
+    name: Assamese
+    category: I
+    file: Category I/English-Assamese Training Data 2026.csv
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Bengali-Assamese
+    nllb_code: asm_Beng
+    selected: true
+  en-mni:
+    name: Manipuri (Bengali script)
+    category: I
+    file: Category I/English-Manipuri Training Data 2026.xlsx
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Bengali-Assamese
+    nllb_code: mni_Beng
+    selected: true
+  en-lus:
+    name: Mizo
+    category: I
+    file: Category I/English-Mizo Traning Data 2026.xlsx
+    header: false
+    en_col: 0
+    x_col: 1
+    script: Latin
+    nllb_code: lus_Latn
+    selected: true
+  en-bodo:
+    name: Bodo
+    category: II
+    file: Category II/English-Bodo Training Data 2026.xlsx
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Devanagari
+    nllb_code: hin_Deva   # proxy: Bodo is unseen by NLLB-200
+    selected: true
+  en-kha:
+    name: Khasi
+    category: I
+    file: Category I/English-Khasi Training Data 2026.xlsx
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Latin
+    selected: false
+  en-mni-Mtei:
+    name: Manipuri (Meitei Mayek script)
+    category: I
+    file: Category I/English-Meitei-Mayek Transining Data 2026.xlsx
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Meetei Mayek
+    selected: false
+  en-njz:
+    name: Nyishi
+    category: I
+    file: Category I/English-Nyishi Training Data 2026.xlsx
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Latin
+    selected: false
+  en-mjw:
+    name: Karbi
+    category: II
+    file: Category II/English - Karbi Training Data 2026.xlsx
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Latin
+    selected: false
+  en-trp:
+    name: Kokborok
+    category: II
+    file: Category II/English-Kokborok Training Data 2026.xlsx
+    header: true
+    en_col: 0
+    x_col: 1
+    script: Latin
+    selected: false
+  en-nag:
+    name: Nagamese
+    category: II
+    file: Category II/English-Nagamese  Training Data 2026.xlsx
+    header: false
+    en_col: 0
+    x_col: 1
+    script: Latin
+    selected: false
+  en-tgj:
+    name: Tagin
+    category: II
+    file: Category II/English-Tagin Training Data 2026.xlsx
+    header: true
+    en_col: 1      # Tagin file has the columns reversed
+    x_col: 0
+    script: Latin
+    selected: false

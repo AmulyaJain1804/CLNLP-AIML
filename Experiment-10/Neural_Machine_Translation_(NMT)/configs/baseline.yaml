@@ -1,0 +1,30 @@
+# M3 baseline: small Transformer trained from scratch (sizes follow low-resource
+# recommendations: Sennrich & Zhang 2019; Araabi & Monz 2020 -> small model, high dropout).
+seed: 42
+model:
+  d_model: 256
+  n_heads: 4
+  ff_dim: 1024
+  enc_layers: 4
+  dec_layers: 4
+  dropout: 0.3
+  attn_dropout: 0.1
+train:
+  max_tokens: 6000          # tokens per batch (src+tgt padded length x sentences)
+  max_len: 200              # subword tokens; longer sentences are truncated
+  lr: 0.0007
+  warmup_steps: 2000        # linear warmup, then inverse-sqrt decay
+  betas: [0.9, 0.98]
+  weight_decay: 0.0001
+  label_smoothing: 0.1
+  clip_norm: 1.0
+  max_steps: 20000
+  max_epochs: 120
+  eval_every: 1000          # steps; dev loss + greedy dev chrF++/BLEU
+  patience: 6               # early stopping on dev chrF++ (evals without improvement)
+decode:
+  beam: 5
+  len_penalty: 1.0
+  max_len_a: 1.5
+  max_len_b: 10
+  batch_size: 64

@@ -1,0 +1,15 @@
+# Local environment (CPU is enough for data, EDA, evaluation and figures).
+# Install with uv into a project venv:   uv venv --python 3.11 && uv pip install -r requirements.txt
+# GPU training runs on Kaggle/Colab: see requirements-gpu.txt and notebooks/.
+torch==2.15.0
+transformers==5.23.0
+sentencepiece==0.2.3
+sacrebleu==2.6.0
+numpy==2.4.6
+pandas==3.1.1
+openpyxl==3.1.5
+pyyaml==6.0.3
+gdown==6.5.1
+matplotlib==3.11.2
+wordcloud==1.9.6
+# optional, GPU recommended:  unbabel-comet  (python -m src.eval.comet_score)

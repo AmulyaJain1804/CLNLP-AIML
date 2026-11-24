@@ -1,0 +1,25 @@
+# M4 advanced model A: fine-tune a pretrained multilingual MT model.
+# NLLB-200-distilled-600M (Costa-jussa et al., 2022), license CC-BY-NC-4.0 (research use OK).
+seed: 42
+model_name_or_path: facebook/nllb-200-distilled-600M
+en_code: eng_Latn            # X codes come from configs/pairs.yaml (nllb_code)
+train:
+  batch_size: 8              # sentences per micro-batch (fits a 16 GB T4 next to AdamW states)
+  grad_accum: 4              # effective batch 32
+  max_len: 128               # NLLB tokens; longer sentences truncated
+  lr: 0.00005
+  warmup_steps: 300
+  weight_decay: 0.0
+  label_smoothing: 0.1
+  clip_norm: 1.0
+  max_epochs: 3
+  max_steps: 4500            # optimizer steps (cap; ~3 epochs of en-as)
+  eval_every: 500            # optimizer steps
+  dev_gen_sentences: 300     # dev chrF++ during training on a fixed dev subset (greedy, fast)
+  patience: 4
+  gradient_checkpointing: false
+decode:
+  beam: 4
+  batch_size: 32
+  max_new_tokens: 256
+save_checkpoint: false       # 600M model = 1.2 GB (fp16) per direction; off to fit Kaggle's 20 GB disk

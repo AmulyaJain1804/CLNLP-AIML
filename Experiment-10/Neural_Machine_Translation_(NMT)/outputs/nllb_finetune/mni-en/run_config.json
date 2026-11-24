@@ -1,0 +1,57 @@
+{
+  "config": {
+    "model_name": "nllb_finetune",
+    "direction": "mni-en",
+    "pair": "en-mni",
+    "pretrained": "facebook/nllb-200-distilled-600M",
+    "src_code": "mni_Beng",
+    "tgt_code": "eng_Latn",
+    "proxy_language_tag": false,
+    "train": {
+      "batch_size": 8,
+      "grad_accum": 4,
+      "max_len": 128,
+      "lr": 5e-05,
+      "warmup_steps": 300,
+      "weight_decay": 0.0,
+      "label_smoothing": 0.1,
+      "clip_norm": 1.0,
+      "max_epochs": 3,
+      "max_steps": 4500,
+      "eval_every": 324,
+      "dev_gen_sentences": 300,
+      "patience": 4,
+      "gradient_checkpointing": false
+    },
+    "decode": {
+      "beam": 4,
+      "batch_size": 32,
+      "max_new_tokens": 256
+    },
+    "n_train": 20759,
+    "total_steps": 1947,
+    "amp_dtype": "torch.float16",
+    "device": "cuda",
+    "n_params": 615073792
+  },
+  "seed": 42,
+  "hardware": {
+    "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+    "python": "3.13.16",
+    "cpu_count": 4,
+    "torch": "2.11.0+cu130",
+    "gpu": "Tesla T4",
+    "gpu_mem_gb": 15.6
+  },
+  "git_commit": "6a20e87c19bd8cca659798152419cb785795461e",
+  "started_at": "2026-11-17 17:02:26",
+  "wall_clock_s": 2275.7,
+  "zeroshot_dev_chrf": 52.30822747653636,
+  "zeroshot_dev_bleu": 26.61705587013854,
+  "best_dev_chrf_subset": 60.60415726130667,
+  "dev_chrf_beam": 61.57403584681832,
+  "steps": 1946,
+  "epochs": 3,
+  "decode_time_s": 100.4,
+  "finished": true
+}

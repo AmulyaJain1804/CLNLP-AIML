@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Low-Resource Indic NMT</title>
+<meta name="description" content="WMT26 Indic MT: Transformer baseline vs back-translation vs NLLB-200 fine-tuning for English ↔ Assamese, Manipuri, Mizo and Bodo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<script>
+/* ============ EDIT THE TITLE SLIDE HERE (or press E in the browser to edit in place) ============ */
+window.TITLE_INFO = {
+  title: "Low-Resource Neural Machine Translation",
+  subtitle: "for North-East Indian languages · WMT26 Indic MT Shared Task",
+  team: [
+    { name: "Amulya Jain", roll: "SAP ID 500122439" },
+    { name: "Himanshu Pokhriyal", roll: "SAP ID 500121200" },
+    { name: "Anirvan Ranjan", roll: "SAP ID 500119330" },
+    { name: "Narind Verma", roll: "SAP ID 500121898" },
+    { name: "Somansh Goel", roll: "SAP ID 500123667" }
+  ],
+  subject: "Computational Linguistics and Natural Language Processing Lab",
+  faculty: "Dr Sahinur Rehman Laskar",
+  institution: "University of Petroleum and Energy Studies (UPES)",
+  repo: "github.com/AmulyaJain1804/CLNLP-AIML  ·  Experiment-10"
+};
+</script>
+<style>
+:root{
+  --bg:#060a14; --bg2:#0b1222; --panel:rgba(15,23,42,.62); --panel-solid:#0f1729;
+  --line:rgba(148,163,184,.16); --line2:rgba(148,163,184,.28);
+  --ink:#eef2f8; --ink2:#a9b4c7; --ink3:#7b8699;
+  --gold:#e8c27a;
+  /* model colours = the report palette, stepped up for a dark surface */
+  --m-base:#4b93ef; --m-bt:#f27c48; --m-nllb:#2fc493;
+  --c4:#f0b429; --c5:#ec8fb5; --c6:#9b8cff;
+  --serif:"Fraunces", Georgia, serif;
+  --sans:"Inter", "Noto Sans Bengali", "Noto Sans Devanagari", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, monospace;
+  --indic:"Noto Sans Bengali","Noto Sans Devanagari","Inter",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;z-index:0;transition:opacity 1.2s ease}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 40%, transparent 35%, rgba(6,10,20,.72) 100%)}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------------- deck ---------------- */
+.deck{position:fixed;inset:0;z-index:2}
+.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:clamp(72px,9vh,104px) clamp(16px,5vw,88px) clamp(64px,8vh,92px);
+  opacity:0;visibility:hidden;transform:translateY(24px);
+  transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1), visibility 0s .7s;
+  overflow-y:auto}
+.slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .8s cubic-bezier(.2,.7,.2,1) .15s, transform .8s cubic-bezier(.2,.7,.2,1) .15s, visibility 0s}
+.slide.prev{transform:translateY(-24px)}
+.wrap{width:100%;max-width:1240px;margin:auto}
+.slide .reveal{opacity:0;transform:translateY(14px);transition:opacity .7s ease, transform .7s ease}
+.slide.active .reveal{opacity:1;transform:none}
+.slide.active .reveal:nth-child(1){transition-delay:.25s}.slide.active .reveal:nth-child(2){transition-delay:.38s}
+.slide.active .reveal:nth-child(3){transition-delay:.51s}.slide.active .reveal:nth-child(4){transition-delay:.64s}
+.slide.active .reveal:nth-child(5){transition-delay:.77s}.slide.active .reveal:nth-child(6){transition-delay:.9s}
+
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.kicker::before{content:"";width:28px;height:1px;background:var(--gold);opacity:.7}
+h1,h2{font-family:var(--serif);font-weight:400;letter-spacing:-.01em;line-height:1.05}
+h2{font-size:clamp(30px,4.2vw,56px);margin-bottom:clamp(18px,3vh,34px)}
+h2 em,h1 em{font-style:italic;color:var(--gold);font-weight:300}
+h3{font-family:var(--serif);font-weight:500;font-size:clamp(18px,1.6vw,23px);margin-bottom:8px;letter-spacing:-.005em}
+p,li{color:var(--ink2);line-height:1.6;font-size:clamp(14px,1.08vw,16.5px)}
+strong{color:var(--ink);font-weight:600}
+.lede{font-size:clamp(16px,1.35vw,20px);max-width:780px;color:var(--ink2);margin-bottom:28px}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:clamp(16px,1.8vw,26px);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.grid{display:grid;gap:clamp(12px,1.5vw,20px)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.split{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(16px,2vw,28px);align-items:start}
+.num{font-family:var(--serif);font-size:clamp(34px,4vw,58px);font-weight:300;line-height:1;letter-spacing:-.02em}
+.num small{font-size:.42em;color:var(--ink3);margin-left:4px;font-family:var(--sans)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.muted{color:var(--ink3)}
+.icon-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(232,194,122,.1);border:1px solid rgba(232,194,122,.25);color:var(--gold);flex:none}
+.icon svg{width:18px;height:18px}
+ul.clean{list-style:none}ul.clean li{padding-left:18px;position:relative;margin:6px 0}
+ul.clean li::before{content:"";position:absolute;left:0;top:.72em;width:7px;height:1px;background:var(--gold)}
+
+/* ---------------- title ---------------- */
+.title-wrap{text-align:center;max-width:1100px}
+.title-wrap h1{font-size:clamp(40px,6.4vw,92px);margin:10px 0 18px}
+.title-wrap .sub{font-size:clamp(15px,1.45vw,21px);color:var(--ink2);font-weight:300}
+.scripts{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:26px 0 34px}
+.scripts span{font-family:var(--indic);font-size:clamp(14px,1.3vw,18px);padding:6px 16px;border-radius:999px;border:1px solid var(--line2);background:rgba(15,23,42,.45);backdrop-filter:blur(8px)}
+.team{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:0 auto 26px;max-width:1040px}
+.member{padding:14px 10px;border-radius:14px;border:1px solid var(--line);background:rgba(15,23,42,.5);backdrop-filter:blur(10px)}
+.member .n{font-weight:600;font-size:clamp(13px,1.1vw,15.5px);color:var(--ink)}
+.member .r{font-family:var(--mono);font-size:12px;color:var(--ink3);margin-top:4px}
+.meta{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 34px;font-size:14px;color:var(--ink2)}
+.meta b{font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-right:8px}
+[data-edit]{border-radius:6px;outline:none;transition:background .2s, box-shadow .2s}
+body.editing [data-edit]{background:rgba(232,194,122,.08);outline:1px dashed rgba(232,194,122,.6);outline-offset:3px;cursor:text}
+.placeholder{color:var(--ink3)!important;font-style:italic}
+
+/* ---------------- chrome ---------------- */
+.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),#fff3d6);z-index:5;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:4;display:flex;justify-content:space-between;align-items:center;padding:18px clamp(16px,3vw,40px);pointer-events:none}
+.brand{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+.brand b{color:var(--gold);font-weight:600}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.count b{color:var(--ink);font-weight:600}
+.nav{position:fixed;right:clamp(10px,1.6vw,26px);top:50%;transform:translateY(-50%);z-index:4;display:flex;flex-direction:column;gap:12px}
+.nav button{position:relative;width:10px;height:10px;border-radius:50%;border:1px solid var(--line2);background:transparent;cursor:pointer;transition:all .3s;padding:0}
+.nav button:hover{border-color:var(--gold)}
+.nav button.on{background:var(--gold);border-color:var(--gold);transform:scale(1.25)}
+.nav button span{position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-family:var(--mono);font-size:11px;color:var(--ink2);background:var(--panel-solid);border:1px solid var(--line);padding:4px 9px;border-radius:7px;opacity:0;pointer-events:none;transition:opacity .2s}
+.nav button:hover span{opacity:1}
+.controls{position:fixed;bottom:clamp(14px,2.4vh,26px);left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:8px;align-items:center}
+.controls button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:rgba(15,23,42,.55);color:var(--ink);cursor:pointer;backdrop-filter:blur(10px);display:grid;place-items:center;transition:border-color .2s, background .2s}
+.controls button:hover{border-color:var(--gold);background:rgba(232,194,122,.12)}
+.controls svg{width:16px;height:16px}
+.hint{position:fixed;bottom:clamp(20px,3vh,32px);left:clamp(16px,3vw,40px);z-index:4;font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.hint kbd{border:1px solid var(--line2);border-radius:4px;padding:1px 5px;margin:0 2px;font-family:inherit}
+.toast{position:fixed;bottom:80px;left:50%;transform:translate(-50%,20px);z-index:6;background:var(--panel-solid);border:1px solid var(--gold);color:var(--ink);font-size:13px;padding:10px 16px;border-radius:10px;opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------------- data viz ---------------- */
+.viz-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:3px;background:rgba(15,23,42,.6)}
+.seg button{border:0;background:transparent;color:var(--ink2);font-family:var(--mono);font-size:12px;padding:6px 14px;border-radius:999px;cursor:pointer;transition:all .2s}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart text{font-family:var(--mono);font-size:11px;fill:var(--ink3)}
+svg.chart .axis{stroke:var(--line2)}
+svg.chart .gridl{stroke:var(--line);stroke-dasharray:2 4}
+svg.chart .bar{transform-box:fill-box;transform-origin:bottom;transform:scaleY(0);transition:transform .9s cubic-bezier(.2,.8,.2,1), opacity .2s}
+.slide.active svg.chart .bar{transform:scaleY(1)}
+svg.chart .hit{fill:transparent;cursor:pointer}
+svg.chart .dim .bar{opacity:.28}
+svg.chart .whisk{stroke:var(--ink2);stroke-width:1.2}
+svg.chart .sig{font-family:var(--sans);font-size:13px;font-weight:700;fill:var(--ink)}
+.tip{position:fixed;z-index:10;pointer-events:none;background:#0d1526;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--ink2);box-shadow:0 12px 40px rgba(0,0,0,.45);opacity:0;transition:opacity .12s;max-width:280px;line-height:1.5}
+.tip.on{opacity:1}.tip b{color:var(--ink)}.tip .t{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-bottom:4px}
+.heat{display:grid;gap:4px;font-family:var(--mono);font-size:12px}
+.heat .h{color:var(--ink3);text-align:center;padding:6px 0;font-size:11px}
+.heat .rl{color:var(--ink2);display:flex;align-items:center;gap:8px;font-family:var(--sans);font-size:13px;padding-right:8px}
+.heat .cell{border-radius:8px;height:52px;display:grid;place-items:center;font-size:13.5px;font-weight:600;transition:transform .2s;cursor:default}
+.heat .cell:hover{transform:scale(1.06)}
+.ramp{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:12px}
+.ramp i{display:block;height:8px;width:160px;border-radius:4px}
+table.tbl{width:100%;border-collapse:collapse;font-size:clamp(12.5px,1vw,14.5px)}
+.tbl th{font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);text-align:right;padding:8px 10px;border-bottom:1px solid var(--line2)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink2);font-variant-numeric:tabular-nums}
+.tbl td:first-child{color:var(--ink)}
+.minibar{display:inline-block;height:6px;border-radius:3px;background:var(--m-base);vertical-align:middle;margin-left:8px;opacity:.85}
+.ex-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ex-tabs button{border:1px solid var(--line2);background:rgba(15,23,42,.55);color:var(--ink2);font-family:var(--mono);font-size:12px;padding:7px 13px;border-radius:999px;cursor:pointer;transition:all .2s}
+.ex-tabs button.on{border-color:var(--gold);color:var(--ink);background:rgba(232,194,122,.12)}
+.ex-row{display:grid;grid-template-columns:180px 1fr 70px;gap:16px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.ex-row:last-child{border-bottom:0}
+.ex-row .who{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:8px}
+.ex-row .txt{font-family:var(--indic);font-size:clamp(14px,1.2vw,17.5px);color:var(--ink);line-height:1.5}
+.ex-row .sc{font-family:var(--mono);font-size:13px;text-align:right;color:var(--ink2)}
+.ex-row.ref .txt{color:var(--gold)}
+.pipeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin-bottom:22px;position:relative}
+.step{position:relative;padding:18px 16px 16px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(12px)}
+.step:first-child{border-radius:16px 0 0 16px}.step:last-child{border-radius:0 16px 16px 0}
+.step + .step{border-left:0}
+.step .m{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.14em}
+.step .s{font-family:var(--serif);font-size:clamp(15px,1.3vw,19px);margin:6px 0 6px;color:var(--ink)}
+.step p{font-size:12.5px;line-height:1.5}
+.step::after{content:"";position:absolute;right:-7px;top:50%;width:12px;height:12px;border-top:1px solid var(--line2);border-right:1px solid var(--line2);background:var(--bg2);transform:translateY(-50%) rotate(45deg);z-index:2}
+.step:last-child::after{display:none}
+.model-card{border-top:3px solid var(--c)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin-top:12px;font-size:13px}
+.kv dt{font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.06em;padding-top:2px}
+.kv dd{color:var(--ink2)}
+#barChart{max-height:min(38vh,400px)}
+.tiles .card{padding:12px 18px;display:flex;align-items:baseline;gap:14px}.tiles .num{font-size:clamp(26px,2.6vw,38px)}.tiles .label{margin-top:0}
+.compact h2{margin-bottom:16px}
+.figure{border-radius:14px;overflow:hidden;background:#fff;border:1px solid var(--line)}
+.figure img{display:block;width:100%;height:auto}
+.caption{font-size:12.5px;color:var(--ink3);margin-top:8px;line-height:1.5}
+.big-quote{font-family:var(--serif);font-size:clamp(22px,2.4vw,34px);font-weight:300;line-height:1.3;color:var(--ink);margin-bottom:28px;max-width:980px}
+.big-quote em{color:var(--gold)}
+.takeaway{display:flex;gap:16px;align-items:flex-start}
+.takeaway .k{font-family:var(--serif);font-size:42px;line-height:.9;color:var(--gold);font-weight:300;min-width:40px}
+.thanks h1{font-size:clamp(56px,10vw,150px);font-style:italic;font-weight:300}
+.note{font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.55}
+.note b{color:var(--ink2);font-weight:600}
+
+@media (max-width:900px){
+  .g3,.g4,.g5,.g2,.split,.pipeline,.team{grid-template-columns:1fr}
+  .team{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .step{border-radius:12px!important;border-left:1px solid var(--line)!important;margin-bottom:8px}.step::after{display:none}
+  .nav,.hint{display:none}
+  .ex-row{grid-template-columns:1fr;gap:4px}.ex-row .sc{text-align:left}
+  .slide{align-items:flex-start}
+}
+@media (max-height:780px) and (min-width:901px){   /* laptop screens / projectors with little height */
+  .slide{padding-top:64px;padding-bottom:70px}
+  h2{font-size:clamp(26px,3.2vw,42px);margin-bottom:14px}
+  .kicker{margin-bottom:10px}
+  .lede{margin-bottom:16px}
+  .card{padding:14px 18px}
+  .tiles .card{padding:8px 16px}.tiles .num{font-size:28px}
+  #barChart{max-height:calc(100vh - 430px)}
+  .compact .note{margin-top:6px}
+  #errChart{max-height:calc(100vh - 300px)}
+  .slide[data-title="Error analysis"] .card p{font-size:13px;line-height:1.5}
+  .heat .cell{height:40px}
+  .figure img{max-height:34vh;object-fit:contain}
+  .title-wrap h1{font-size:clamp(36px,5.4vw,72px);margin:6px 0 10px}
+  .scripts{margin:16px 0 20px}.team{margin-bottom:16px}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .slide,.slide .reveal,svg.chart .bar{transition:none!important}
+}
+@media print{
+  html,body{overflow:visible;height:auto}
+  .slide{position:relative;opacity:1;visibility:visible;transform:none;page-break-after:always;min-height:100vh}
+  .slide .reveal{opacity:1;transform:none}svg.chart .bar{transform:none}
+  .nav,.controls,.hint,.topbar,.progress{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="vignette"></div><div class="grain"></div>
+<div class="progress" id="progress"></div>
+<div class="topbar"><div class="brand"><b>WMT26</b> · Indic MT</div><div class="count" id="count"></div></div>
+<nav class="nav" id="nav" aria-label="Slides"></nav>
+<div class="controls">
+  <button id="prevBtn" aria-label="Previous slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <button id="nextBtn" aria-label="Next slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+</div>
+<div class="hint"><kbd>←</kbd><kbd>→</kbd> navigate · <kbd>F</kbd> fullscreen · <kbd>E</kbd> edit title</div>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<main class="deck" id="deck">
+
+<!-- 1 · TITLE -->
+<section class="slide" data-title="Title" data-shape="globe">
+  <div class="title-wrap">
+    <div class="kicker reveal" style="justify-content:center">Natural Language Processing · Project Presentation</div>
+    <h1 class="reveal" data-edit="title"></h1>
+    <p class="sub reveal" data-edit="subtitle"></p>
+    <div class="scripts reveal">
+      <span>English</span><span>অসমীয়া · Assamese</span><span>মৈতৈলোন্ · Manipuri</span><span>Mizo ṭawng</span><span>बर' · Bodo</span>
+    </div>
+    <div class="team reveal" id="team"></div>
+    <div class="meta reveal">
+      <div><b>Subject</b><span data-edit="subject"></span></div>
+      <div><b>Faculty</b><span data-edit="faculty"></span></div>
+      <div><b>Institution</b><span data-edit="institution"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · INTRODUCTION -->
+<section class="slide" data-title="Introduction" data-shape="bridge">
+  <div class="wrap">
+    <div class="kicker reveal">01 · Introduction</div>
+    <h2 class="reveal">Translating languages that <em>barely have data</em></h2>
+    <p class="lede reveal">Neural MT works well when there are millions of sentence pairs. North-East India has dozens of languages
+      with only a few thousand. The <strong>WMT26 Indic MT shared task</strong> releases parallel data for 11 of them.
+      We asked how far careful engineering can take a model in this regime.</p>
+    <div class="grid g3 reveal">
+      <div class="card"><div class="icon-row"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg></div><h3>The problem</h3></div>
+        <p>English ↔ <strong>Assamese, Manipuri, Mizo, Bodo</strong>, with 11k–49k training pairs each. That is 100–1000× less than high-resource pairs.</p></div>
+      <div class="card"><div class="icon-row"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div><h3>Why it is hard</h3></div>
+        <p>Four scripts (Bengali-Assamese, Bengali, Latin, Devanagari), rich morphology, noisy web/religious-domain data, and one
+          language (Bodo) that no large pretrained MT model has seen.</p></div>
+      <div class="card"><div class="icon-row"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><h3>Our goal</h3></div>
+        <p>Compare a <strong>Transformer baseline</strong> with <strong>two improvements</strong>: back-translation and transfer learning from NLLB-200.
+          Evaluation uses confidence intervals and significance tests.</p></div>
+    </div>
+    <div class="reveal" style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">
+      <span class="chip">8 translation directions</span><span class="chip">3 systems</span><span class="chip">30+ training runs</span><span class="chip" id="gpuChip"></span><span class="chip">5-member pipeline</span>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · DATASET -->
+<section class="slide" data-title="Dataset" data-shape="columns">
+  <div class="wrap">
+    <div class="kicker reveal">02 · Dataset description</div>
+    <h2 class="reveal">WMT26 Indic MT, <em>2026 release</em></h2>
+    <div class="split">
+      <div class="reveal">
+        <div class="card">
+          <table class="tbl" id="dataTable"></table>
+          <p class="note"><b>Cleaning (train only):</b> NFC normalisation, removal of empty, duplicate and wrong-script pairs and
+            length-ratio filtering, plus removal of every pair that overlaps dev/test. Dev and test are never filtered.
+            <b>Tokeniser:</b> a joint SentencePiece unigram model per pair (8k vocab; 6k for Bodo).</p>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="grid g2" style="margin-bottom:14px">
+          <div class="card"><div class="num" id="statTrain"></div><div class="label">train pairs (4 modelled)</div></div>
+          <div class="card"><div class="num">11</div><div class="label">language pairs released</div></div>
+        </div>
+        <div class="figure"><img src="figures/split_sizes.png" alt="Train/dev/test sizes for all 11 pairs (log scale)" loading="lazy"></div>
+        <p class="caption">All 11 released pairs after cleaning (log scale). The four modelled pairs are marked with *.
+          The official test sets are password-protected for registered teams, so we hold out our own dev and test splits with a fixed seed (42).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · METHODOLOGY -->
+<section class="slide" data-title="Methodology" data-shape="helix">
+  <div class="wrap">
+    <div class="kicker reveal">03 · Methodology</div>
+    <h2 class="reveal">One pipeline, <em>three systems</em></h2>
+    <div class="pipeline reveal">
+      <div class="step"><div class="m">M1</div><div class="s">Data</div><p>Download, checksums, alignment checks, held-out splits</p></div>
+      <div class="step"><div class="m">M2</div><div class="s">Preprocess</div><p>NFC, script checks, filters, SentencePiece, EDA</p></div>
+      <div class="step"><div class="m">M3</div><div class="s">Baseline</div><p>Transformer from scratch, beam search</p></div>
+      <div class="step"><div class="m">M4</div><div class="s">Advanced</div><p>Back-translation · NLLB-200 fine-tuning</p></div>
+      <div class="step"><div class="m">M5</div><div class="s">Evaluate</div><p>chrF++ / BLEU, bootstrap, significance, errors</p></div>
+    </div>
+    <div class="grid g3 reveal">
+      <div class="card model-card" style="--c:var(--m-base)">
+        <h3><span class="dot" style="background:var(--m-base)"></span> Transformer baseline</h3>
+        <p>A small pre-norm encoder–decoder sized for limited data. It is the reference for every comparison.</p>
+        <dl class="kv"><dt>size</dt><dd>d 256 · 4 heads · 4+4 layers · 9.4M params</dd><dt>regularise</dt><dd>dropout 0.3 · label smoothing 0.1 · early stop</dd>
+          <dt>train</dt><dd>AdamW, inv-sqrt LR, ≤20k steps</dd><dt>decode</dt><dd>beam 5</dd></dl>
+      </div>
+      <div class="card model-card" style="--c:var(--m-bt)">
+        <h3><span class="dot" style="background:var(--m-bt)"></span> + Back-translation</h3>
+        <p>The baseline translates 150k+ English monolingual sentences. The synthetic pairs are tagged <code>&lt;BT&gt;</code> and mixed 1:1 with the real data.</p>
+        <dl class="kv"><dt>X→en</dt><dd>classic back-translation</dd><dt>en→X</dt><dd>forward translation (self-training)</dd>
+          <dt>added</dt><dd id="btAdded"></dd><dt>quality</dt><dd id="btQual"></dd></dl>
+      </div>
+      <div class="card model-card" style="--c:var(--m-nllb)">
+        <h3><span class="dot" style="background:var(--m-nllb)"></span> NLLB-200 fine-tuned</h3>
+        <p>Transfer from Meta's 200-language MT model. Bodo is unseen, so it borrows the Hindi tag (same Devanagari script).</p>
+        <dl class="kv"><dt>model</dt><dd>nllb-200-distilled-600M · 615M params</dd><dt>tags</dt><dd>asm_Beng · mni_Beng · lus_Latn · hin_Deva→Bodo</dd>
+          <dt>train</dt><dd>LR 5e-5, batch 32, ≤3 epochs, fp16/bf16</dd><dt>decode</dt><dd>beam 4</dd></dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · EXPERIMENTS -->
+<section class="slide" data-title="Experimental setup" data-shape="wave">
+  <div class="wrap">
+    <div class="kicker reveal">04 · Experiments</div>
+    <h2 class="reveal">Measured <em>carefully</em>, not just once</h2>
+    <div class="grid g4 reveal" style="margin-bottom:18px">
+      <div class="card"><div class="num">chrF++</div><div class="label">primary metric · sacreBLEU 2.6</div></div>
+      <div class="card"><div class="num">1000<small>×</small></div><div class="label">bootstrap resamples · 95% CI</div></div>
+      <div class="card"><div class="num">p&lt;.05</div><div class="label">paired bootstrap vs baseline</div></div>
+      <div class="card"><div class="num" id="gpuNum"></div><div class="label">GPU time · A100 + T4</div></div>
+    </div>
+    <div class="grid g3 reveal">
+      <div class="card"><h3>Protocol</h3><ul class="clean">
+        <li>A fixed dev set for checkpoint selection and early stopping. The test set is decoded <strong>once</strong>.</li>
+        <li>Train ∩ test overlap is removed; the tokeniser sees train only.</li>
+        <li>Seed 42 everywhere. Every run logs its config, hardware and wall-clock time.</li></ul></div>
+      <div class="card"><h3>Runs</h3><ul class="clean">
+        <li>3 systems × 8 directions</li>
+        <li>Learning curve: the baseline on 10 / 25 / 50 / 100% of en↔as</li>
+        <li>NLLB zero-shot score logged before fine-tuning</li></ul></div>
+      <div class="card"><h3>Analysis</h3><ul class="clean">
+        <li>BLEU + chrF++ with signature strings</li>
+        <li>64 worst sentences per model, auto-categorised</li>
+        <li>Length vs quality, attention maps</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · RESULTS -->
+<section class="slide compact" data-title="Results" data-shape="results">
+  <div class="wrap">
+    <div class="kicker reveal">05 · Results</div>
+    <h2 class="reveal">Transfer learning <em>wins everywhere</em></h2>
+    <div class="grid g3 reveal tiles" style="margin-bottom:14px" id="avgTiles"></div>
+    <div class="card reveal">
+      <div class="viz-head">
+        <div class="legend" id="barLegend"></div>
+        <div class="seg" id="metricSeg"><button data-m="chrf++" class="on">chrF++</button><button data-m="bleu">BLEU</button><button data-m="comet">COMET</button></div>
+      </div>
+      <svg class="chart" id="barChart" role="img" aria-label="Test score per direction and model with 95% confidence intervals"></svg>
+      <p class="note">Test set; whiskers = 95% bootstrap CI; <b>*</b> / <b>†</b> = significantly better / worse than the baseline (paired bootstrap, p&lt;0.05). Hover a bar for details.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · RESULTS II -->
+<section class="slide" data-title="Comparison" data-shape="grid">
+  <div class="wrap">
+    <div class="kicker reveal">05 · Results · model comparison</div>
+    <h2 class="reveal">Models × directions</h2>
+    <div class="split">
+      <div class="card reveal">
+        <h3>Test chrF++ heatmap</h3>
+        <div class="heat" id="heat" style="margin-top:12px"></div>
+        <div class="ramp" id="ramp"></div>
+      </div>
+      <div class="card reveal">
+        <h3>Gain over the baseline</h3>
+        <table class="tbl" id="deltaTable"></table>
+        <p class="note">Δ chrF++ against the baseline with significance. Back-translation helps only Bodo, the pair with the least real data.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · RESULTS III -->
+<section class="slide" data-title="Deeper look" data-shape="spiral">
+  <div class="wrap">
+    <div class="kicker reveal">05 · Results · why</div>
+    <h2 class="reveal">Data size is <em>the</em> bottleneck</h2>
+    <div class="grid g2">
+      <div class="card reveal">
+        <h3>Learning curve: baseline</h3>
+        <svg class="chart" id="lcChart" role="img" aria-label="Baseline test chrF++ against training size"></svg>
+        <p class="note">Each doubling of real data adds about 3–4 chrF++, with no plateau in sight. Bands show the 95% CI.</p>
+      </div>
+      <div class="card reveal">
+        <h3>NLLB: zero-shot → fine-tuned</h3>
+        <svg class="chart" id="zsChart" role="img" aria-label="NLLB dev chrF++ before and after fine-tuning"></svg>
+        <p class="note">Dev chrF++. Fine-tuning helps in every direction. Bodo, unseen in pre-training, jumps by more than 40 points through the Hindi proxy tag.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · EXAMPLES -->
+<section class="slide" data-title="Examples" data-shape="ring">
+  <div class="wrap">
+    <div class="kicker reveal">05 · Results · in practice</div>
+    <h2 class="reveal">What the outputs <em>look like</em></h2>
+    <div class="ex-tabs reveal" id="exTabs"></div>
+    <div class="card reveal" id="exCard"></div>
+    <p class="note reveal">Representative test sentences, chosen automatically: a medium length, and a baseline score close to its average. Sentence chrF++ on the right.</p>
+  </div>
+</section>
+
+<!-- 10 · ERRORS -->
+<section class="slide" data-title="Error analysis" data-shape="knot">
+  <div class="wrap">
+    <div class="kicker reveal">05 · Results · error analysis</div>
+    <h2 class="reveal">Where the models <em>fail</em></h2>
+    <div class="split">
+      <div class="card reveal">
+        <div class="viz-head"><h3>Error categories (64 worst sentences per model)</h3><div class="legend" id="errLegend"></div></div>
+        <svg class="chart" id="errChart" role="img" aria-label="Error category counts per model"></svg>
+      </div>
+      <div class="reveal">
+        <div class="card" style="margin-bottom:12px"><h3>≈⅓ are not model errors</h3><p>Many of the "worst" test pairs are misaligned in the release. One example is a long sentence whose reference is just a Bible verse number. NLLB often translates these <strong>correctly</strong> and still scores about 5 chrF++.</p></div>
+        <div class="card" style="margin-bottom:12px"><h3>Omission dominates</h3><p>The scratch models stop early on long or rare-word inputs. NLLB omits less (31 against 36–37 of 64).</p></div>
+        <div class="card"><h3>Loops and names</h3><p>Hallucinations are repetition loops on lists of names. Back-translation <strong>adds</strong> named-entity errors, because its synthetic data garbles names.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · CONCLUSION -->
+<section class="slide" data-title="Conclusion" data-shape="galaxy">
+  <div class="wrap">
+    <div class="kicker reveal">06 · Conclusion &amp; future scope</div>
+    <p class="big-quote reveal" id="conclusionQuote"></p>
+    <div class="grid g2">
+      <div class="card reveal"><h3>Key takeaways</h3>
+        <div class="takeaway" style="margin-top:12px"><div class="k">1</div><p><strong>Pretrained multilingual transfer dominates.</strong> NLLB-200 beats the baseline by 4–19 chrF++ in every direction, and learns unseen Bodo through a proxy tag.</p></div>
+        <div class="takeaway" style="margin-top:12px"><div class="k">2</div><p><strong>Back-translation needs a good generator.</strong> With noisy synthetic data (round-trip chrF++ 20–27), it helps only the smallest pair. This is an honest negative result.</p></div>
+        <div class="takeaway" style="margin-top:12px"><div class="k">3</div><p><strong>Evaluation hygiene matters.</strong> About a third of the worst test cases are misaligned references, so CIs and error analysis change how the results should be read.</p></div>
+      </div>
+      <div class="card reveal"><h3>Future scope</h3><ul class="clean" style="margin-top:10px">
+        <li><strong>Back-translation with NLLB as the generator</strong>, sampling, and tuned synthetic ratios</li>
+        <li><strong>One multilingual model</strong> for all 11 pairs, with related-language transfer (as → mni)</li>
+        <li><strong>LoRA / larger NLLB</strong> (1.3B, 3.3B) within the same GPU budget</li>
+        <li><strong>Decoding fixes:</strong> repetition penalty, n-gram blocking</li>
+        <li>Evaluation on the <strong>official test set</strong>, with COMET and human judgements</li></ul>
+        <p class="note"><b>Limitations:</b> our own held-out split (not leaderboard-comparable), a single seed, noisy references, and possible overlap between NLLB's pre-training data and public Bible/news text.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · THANKS -->
+<section class="slide thanks" data-title="Thank you" data-shape="globe2">
+  <div class="title-wrap">
+    <div class="kicker reveal" style="justify-content:center">Questions &amp; discussion</div>
+    <h1 class="reveal">Thank you</h1>
+    <p class="sub reveal" style="margin-top:14px">ধন্যবাদ · থাগৎচরি · Ka lawm e · साबायखुर</p>
+    <p class="reveal" style="margin-top:26px;font-family:var(--mono);font-size:13px;color:var(--ink3)" data-edit="repo"></p>
+  </div>
+</section>
+
+</main>
+
+<script src="data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+"use strict";
+const D = window.NMT_DATA || {scores:[],significance:[],learning_curve:[],pairs:[],zeroshot:[],errors:{},examples:[],directions:[],models:[]};
+const MODELS = ["baseline","backtranslation","nllb_finetune"];
+const MLABEL = {baseline:"Transformer baseline", backtranslation:"+ Back-translation", nllb_finetune:"NLLB-200 fine-tuned"};
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const MCOL = {baseline:css("--m-base"), backtranslation:css("--m-bt"), nllb_finetune:css("--m-nllb")};
+const LANG = {as:"Assamese", mni:"Manipuri", lus:"Mizo", bodo:"Bodo", en:"English"};
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs={}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const fmt = (v, d=1) => v == null ? "n/a" : (+v).toFixed(d);
+const score = (m, d) => D.scores.find(r => r.model === m && r.direction === d);
+const sig = (m, d, k) => D.significance.find(r => r.model === m && r.direction === d && r.metric === k);
+const dirs = D.directions.filter(d => D.scores.some(r => r.direction === d));
+const shared = dirs.filter(d => MODELS.every(m => score(m, d)));
+
+/* ---------------- tooltip ---------------- */
+const tip = $("#tip");
+function showTip(html, ev){ tip.innerHTML = html; tip.classList.add("on"); moveTip(ev); }
+function moveTip(ev){ const x = ev.clientX + 16, y = ev.clientY + 16; const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(x, innerWidth - w - 12) + "px"; tip.style.top = Math.min(y, innerHeight - h - 12) + "px"; }
+function hideTip(){ tip.classList.remove("on"); }
+
+/* ---------------- title slide (editable, remembered per browser) ---------------- */
+const TI = Object.assign({}, window.TITLE_INFO);
+try { Object.assign(TI, JSON.parse(localStorage.getItem("nmt-title") || "{}")); } catch(e) {}
+function renderTeam(){
+  const t = $("#team"); t.innerHTML = "";
+  TI.team.forEach((m, i) => {
+    const d = document.createElement("div"); d.className = "member";
+    d.innerHTML = `<div class="n" data-edit="team.${i}.name"></div><div class="r" data-edit="team.${i}.roll"></div>`;
+    t.appendChild(d);
+  });
+}
+const getP = (o, p) => p.split(".").reduce((a, k) => a?.[k], o);
+const setP = (o, p, v) => { const ks = p.split("."); const last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
+function fillEditable(){
+  $$("[data-edit]").forEach(e => { const v = getP(TI, e.dataset.edit) ?? ""; e.textContent = v;
+    e.classList.toggle("placeholder", /^\[.*\]$/.test(v)); });
+}
+renderTeam(); fillEditable();
+let editing = false;
+function toggleEdit(){
+  editing = !editing; document.body.classList.toggle("editing", editing);
+  $$("[data-edit]").forEach(e => e.contentEditable = editing);
+  toast(editing ? "Edit mode: click any title field and type. Press E again to save." : "Saved in this browser. Put the final text in TITLE_INFO in index.html to share it.");
+  if (!editing) {
+    $$("[data-edit]").forEach(e => { setP(TI, e.dataset.edit, e.textContent.trim()); e.classList.toggle("placeholder", /^\[.*\]$/.test(e.textContent.trim())); });
+    try { localStorage.setItem("nmt-title", JSON.stringify(TI)); } catch(e) {}
+  }
+}
+let toastT; function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 3200); }
+
+/* ---------------- dataset slide ---------------- */
+(function dataset(){
+  const P = D.pairs; if (!P.length) return;
+  const maxT = Math.max(...P.map(p => p.splits.train));
+  let h = `<thead><tr><th>Pair</th><th>Train</th><th>Dev</th><th>Test</th><th>Removed</th></tr></thead><tbody>`;
+  for (const p of P) {
+    const x = p.pair.split("-")[1]; const rem = Object.values(p.removed).reduce((a, b) => a + b, 0);
+    h += `<tr><td>en ↔ ${x} <span class="muted">· ${LANG[x]||x}</span></td><td>${p.splits.train.toLocaleString()}<span class="minibar" style="width:${Math.round(70*p.splits.train/maxT)}px"></span></td>
+      <td>${p.splits.dev.toLocaleString()}</td><td>${p.splits.test.toLocaleString()}</td><td class="muted">${rem.toLocaleString()}</td></tr>`;
+  }
+  $("#dataTable").innerHTML = h + "</tbody>";
+  const tot = P.reduce((a, p) => a + p.splits.train, 0);
+  $("#statTrain").innerHTML = (tot/1000).toFixed(0) + "<small>k</small>";
+  const syn = P.filter(p => p.synthetic);
+  if (syn.length) {
+    $("#btAdded").textContent = syn.map(p => (p.synthetic/1000).toFixed(0) + "k").join(" / ") + " pairs (" + syn.map(p => p.pair.split("-")[1]).join(" / ") + ")";
+    const rc = syn.map(p => p.roundtrip_chrf); $("#btQual").textContent = `round-trip chrF++ ${Math.min(...rc).toFixed(0)}–${Math.max(...rc).toFixed(0)} (noisy)`;
+  }
+  $("#gpuChip").textContent = `${D.gpu_hours} GPU-hours`; $("#gpuNum").innerHTML = `${D.gpu_hours}<small>h</small>`;
+})();
+
+/* ---------------- averages + conclusion quote ---------------- */
+(function averages(){
+  const avg = (m, k) => { const v = shared.map(d => score(m, d)?.[k]).filter(x => x != null); return v.reduce((a, b) => a + b, 0) / v.length; };
+  const base = avg("baseline", "chrf++");
+  $("#avgTiles").innerHTML = MODELS.map(m => {
+    const a = avg(m, "chrf++"), dlt = a - base;
+    return `<div class="card" style="border-top:3px solid ${MCOL[m]}"><div class="num">${a.toFixed(1)}</div>
+      <div class="label">${MLABEL[m]} · avg chrF++${m !== "baseline" ? ` · <span style="color:${dlt >= 0 ? "var(--ink)" : "var(--ink2)"}">${dlt >= 0 ? "+" : ""}${dlt.toFixed(1)}</span>` : ""}</div></div>`;
+  }).join("");
+  const note = shared.length < dirs.length ? ` over the ${shared.length} directions all three systems share` : ` over all ${dirs.length} directions`;
+  $("#avgTiles").insertAdjacentHTML("afterend", `<p class="note" style="margin:-6px 0 12px">Averages${note}.</p>`);
+  const n = avg("nllb_finetune", "chrf++");
+  $("#conclusionQuote").innerHTML = `Fine-tuning a pretrained multilingual model lifted average chrF++ from <em>${base.toFixed(1)}</em> to <em>${n.toFixed(1)}</em>. In low-resource MT, <em>transferred knowledge</em> beats generated data.`;
+})();
+
+/* ---------------- grouped bar chart ---------------- */
+function legend(target, items){ $(target).innerHTML = items.map(([c, l]) => `<span><i class="dot" style="background:${c}"></i>${l}</span>`).join(""); }
+legend("#barLegend", MODELS.map(m => [MCOL[m], MLABEL[m]]));
+function barChart(metric){
+  const svg = $("#barChart"); svg.innerHTML = "";
+  const W = 1000, H = 330, L = 44, R = 10, T = 22, B = 34; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const vals = D.scores.map(r => r[metric + "_hi"]).filter(v => v != null);
+  const ymax = Math.ceil(Math.max(...vals) * 1.06 / 10) * 10;
+  const y = v => T + (H - T - B) * (1 - v / ymax);
+  for (let v = 0; v <= ymax; v += 10) { el("line", {x1:L, x2:W-R, y1:y(v), y2:y(v), class: v ? "gridl" : "axis"}, svg);
+    el("text", {x:L-8, y:y(v)+4, "text-anchor":"end"}, svg).textContent = v; }
+  const gw = (W - L - R) / dirs.length, bw = Math.min(30, gw / 4.2);
+  dirs.forEach((d, i) => {
+    const cx = L + gw * (i + .5);
+    const t = el("text", {x:cx, y:H-B+20, "text-anchor":"middle"}, svg); t.textContent = d; t.style.fill = "var(--ink2)"; t.style.fontSize = "12px";
+    MODELS.forEach((m, j) => {
+      const r = score(m, d); const x = cx + (j - 1) * (bw + 5) - bw / 2;
+      const g = el("g", {class:"bg"}, svg);
+      if (!r || r[metric] == null) { const na = el("text", {x:x+bw/2, y:y(0)-6, "text-anchor":"middle"}, g); na.textContent = "n/a"; return; }
+      const v = r[metric], top = y(v), bh = y(0) - top, rad = 4;
+      const p = el("path", {d:`M${x},${y(0)} V${top+rad} Q${x},${top} ${x+rad},${top} H${x+bw-rad} Q${x+bw},${top} ${x+bw},${top+rad} V${y(0)} Z`, fill:MCOL[m], class:"bar"}, g);
+      p.style.transitionDelay = (i * 60 + j * 40) + "ms";
+      const lo = r[metric + "_lo"], hi = r[metric + "_hi"], xm = x + bw / 2;
+      el("line", {x1:xm, x2:xm, y1:y(lo), y2:y(hi), class:"whisk"}, g);
+      el("line", {x1:xm-4, x2:xm+4, y1:y(hi), y2:y(hi), class:"whisk"}, g);
+      el("line", {x1:xm-4, x2:xm+4, y1:y(lo), y2:y(lo), class:"whisk"}, g);
+      const s = sig(m, d, metric);
+      if (s && s.sig) { const tx = el("text", {x:xm, y:y(hi)-6, "text-anchor":"middle", class:"sig"}, g); tx.textContent = s.delta > 0 ? "*" : "†"; }
+      const hit = el("rect", {x:x-2, y:T, width:bw+4, height:y(0)-T, class:"hit"}, g);
+      hit.addEventListener("mousemove", ev => {
+        svg.classList.add("dim"); g.classList.remove("bg"); $$(".bar", svg).forEach(b => b.style.opacity = b.parentNode === g ? 1 : "");
+        const sd = s ? `<br>Δ vs baseline <b>${s.delta > 0 ? "+" : ""}${fmt(s.delta, 2)}</b> · p = ${fmt(s.p, 3)}${s.sig ? " (sig.)" : ""}` : "";
+        showTip(`<div class="t">${d} · ${({bleu:"BLEU", comet:"COMET"})[metric] || "chrF++"}</div><b style="color:${MCOL[m]}">${MLABEL[m]}</b><br><b>${fmt(v, 2)}</b> &nbsp;95% CI [${fmt(lo)}, ${fmt(hi)}]${sd}`, ev);
+      });
+      hit.addEventListener("mouseleave", () => { svg.classList.remove("dim"); $$(".bar", svg).forEach(b => b.style.opacity = ""); hideTip(); });
+    });
+  });
+}
+barChart("chrf++");
+$$("#metricSeg button").forEach(b => b.addEventListener("click", () => {
+  $$("#metricSeg button").forEach(x => x.classList.toggle("on", x === b)); barChart(b.dataset.m);
+}));
+
+/* ---------------- heatmap + deltas ---------------- */
+(function heat(){
+  const ramp = ["#0f2442","#14345f","#1b4a85","#2463ae","#3b82d6","#6aa6ee","#a7cdf8"];
+  const vs = D.scores.map(r => r["chrf++"]); const lo = Math.floor(Math.min(...vs) / 5) * 5, hi = Math.ceil(Math.max(...vs) / 5) * 5;
+  const col = v => ramp[Math.max(0, Math.min(ramp.length - 1, Math.floor((v - lo) / (hi - lo) * ramp.length)))];
+  const h = $("#heat"); h.style.gridTemplateColumns = `150px repeat(${dirs.length}, minmax(0,1fr))`;
+  h.innerHTML = `<div></div>` + dirs.map(d => `<div class="h">${d}</div>`).join("");
+  MODELS.forEach(m => {
+    h.insertAdjacentHTML("beforeend", `<div class="rl"><i class="dot" style="background:${MCOL[m]}"></i>${MLABEL[m].replace("Transformer ", "")}</div>`);
+    dirs.forEach(d => { const r = score(m, d); const v = r?.["chrf++"];
+      const c = document.createElement("div"); c.className = "cell";
+      if (v == null) { c.textContent = "n/a"; c.style.background = "rgba(148,163,184,.08)"; c.style.color = "var(--ink3)"; }
+      else { c.textContent = v.toFixed(1); c.style.background = col(v); c.style.color = (v - lo) / (hi - lo) > .7 ? "#06101f" : "#eef2f8";
+        c.addEventListener("mousemove", ev => showTip(`<div class="t">${d}</div><b style="color:${MCOL[m]}">${MLABEL[m]}</b><br>chrF++ <b>${v.toFixed(2)}</b> [${fmt(r["chrf++_lo"])}, ${fmt(r["chrf++_hi"])}]<br>BLEU ${fmt(r.bleu, 2)}`, ev));
+        c.addEventListener("mouseleave", hideTip); }
+      h.appendChild(c); });
+  });
+  $("#ramp").innerHTML = `${lo}<i style="background:linear-gradient(90deg,${ramp.join(",")})"></i>${hi} chrF++`;
+  let t = `<thead><tr><th>Direction</th><th>+ BT</th><th>NLLB</th></tr></thead><tbody>`;
+  for (const d of dirs) {
+    const cell = m => { const s = sig(m, d, "chrf++"); if (!s) return `<td class="muted">n/a</td>`;
+      const c = s.sig ? (s.delta > 0 ? "var(--ink)" : "var(--m-bt)") : "var(--ink3)";
+      return `<td style="color:${c}">${s.delta > 0 ? "+" : ""}${s.delta.toFixed(2)}${s.sig ? (s.delta > 0 ? " *" : " †") : ""}</td>`; };
+    t += `<tr><td>${d}</td>${cell("backtranslation")}${cell("nllb_finetune")}</tr>`;
+  }
+  $("#deltaTable").innerHTML = t + "</tbody>";
+})();
+
+/* ---------------- learning curve ---------------- */
+(function lc(){
+  const rows = D.learning_curve; if (!rows.length) return;
+  const svg = $("#lcChart"); const W = 520, H = 300, L = 40, R = 56, T = 14, B = 40; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const ns = rows.map(r => r.n), lx0 = Math.log(Math.min(...ns)) - .1, lx1 = Math.log(Math.max(...ns)) + .1;
+  const ymin = Math.floor(Math.min(...rows.map(r => r.lo)) / 5) * 5, ymax = Math.ceil(Math.max(...rows.map(r => r.hi)) / 5) * 5;
+  const x = n => L + (W - L - R) * (Math.log(n) - lx0) / (lx1 - lx0), y = v => T + (H - T - B) * (1 - (v - ymin) / (ymax - ymin));
+  for (let v = ymin; v <= ymax; v += 5) { el("line", {x1:L, x2:W-R, y1:y(v), y2:y(v), class:"gridl"}, svg); el("text", {x:L-8, y:y(v)+4, "text-anchor":"end"}, svg).textContent = v; }
+  [5000, 10000, 25000, 50000].forEach(n => { if (n >= Math.exp(lx0) && n <= Math.exp(lx1)) el("text", {x:x(n), y:H-B+18, "text-anchor":"middle"}, svg).textContent = n >= 1000 ? n/1000 + "k" : n; });
+  el("text", {x:(L+W-R)/2, y:H-6, "text-anchor":"middle"}, svg).textContent = "training pairs (log scale)";
+  const C = [css("--c4"), css("--c5")];
+  [...new Set(rows.map(r => r.direction))].forEach((d, k) => {
+    const rr = rows.filter(r => r.direction === d).sort((a, b) => a.n - b.n);
+    el("path", {d: "M" + rr.map(r => `${x(r.n)},${y(r.hi)}`).join("L") + "L" + rr.slice().reverse().map(r => `${x(r.n)},${y(r.lo)}`).join("L") + "Z", fill:C[k], opacity:.16}, svg);
+    el("path", {d: "M" + rr.map(r => `${x(r.n)},${y(r.chrf)}`).join("L"), fill:"none", stroke:C[k], "stroke-width":2}, svg);
+    rr.forEach(r => { const c = el("circle", {cx:x(r.n), cy:y(r.chrf), r:4.5, fill:C[k], stroke:"var(--bg)", "stroke-width":2}, svg);
+      const hit = el("circle", {cx:x(r.n), cy:y(r.chrf), r:14, class:"hit"}, svg);
+      hit.addEventListener("mousemove", ev => showTip(`<div class="t">${d} · ${Math.round(r.fraction*100)}% of data</div><b>${r.n.toLocaleString()}</b> pairs → chrF++ <b>${r.chrf}</b><br>95% CI [${r.lo}, ${r.hi}]`, ev));
+      hit.addEventListener("mouseleave", hideTip); });
+    const last = rr[rr.length - 1]; const t = el("text", {x:x(last.n)+10, y:y(last.chrf)+4}, svg); t.textContent = d; t.style.fill = C[k];
+  });
+})();
+
+/* ---------------- zero-shot dumbbell ---------------- */
+(function zs(){
+  const rows = D.zeroshot; if (!rows.length) return;
+  const svg = $("#zsChart"); const W = 520, H = 300, L = 70, R = 46, T = 10, B = 36; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const xmax = Math.ceil(Math.max(...rows.map(r => r.finetuned)) / 10) * 10 + 5;
+  const x = v => L + (W - L - R) * v / xmax, rh = (H - T - B) / rows.length;
+  for (let v = 0; v <= xmax; v += 10) { el("line", {x1:x(v), x2:x(v), y1:T, y2:H-B, class:"gridl"}, svg); el("text", {x:x(v), y:H-B+16, "text-anchor":"middle"}, svg).textContent = v; }
+  el("text", {x:(L+W-R)/2, y:H-4, "text-anchor":"middle"}, svg).textContent = "dev chrF++";
+  const C = css("--m-nllb");
+  rows.forEach((r, i) => { const cy = T + rh * (i + .5);
+    const t = el("text", {x:L-10, y:cy+4, "text-anchor":"end"}, svg); t.textContent = r.direction; t.style.fill = "var(--ink2)";
+    el("line", {x1:x(r.zeroshot), x2:x(r.finetuned), y1:cy, y2:cy, stroke:C, "stroke-width":2, opacity:.55}, svg);
+    el("circle", {cx:x(r.zeroshot), cy, r:5, fill:"var(--bg)", stroke:C, "stroke-width":2}, svg);
+    el("circle", {cx:x(r.finetuned), cy, r:5.5, fill:C}, svg);
+    const g = el("text", {x:x(r.finetuned)+10, y:cy+4}, svg); g.textContent = "+" + (r.finetuned - r.zeroshot).toFixed(1); g.style.fill = "var(--ink)";
+    const hit = el("rect", {x:L, y:cy-rh/2, width:W-L-R, height:rh, class:"hit"}, svg);
+    hit.addEventListener("mousemove", ev => showTip(`<div class="t">NLLB · ${r.direction}${r.direction.includes("bodo") ? " · hin_Deva proxy" : ""}</div>zero-shot <b>${r.zeroshot}</b> → fine-tuned <b>${r.finetuned}</b>`, ev));
+    hit.addEventListener("mouseleave", hideTip); });
+})();
+
+/* ---------------- examples ---------------- */
+(function examples(){
+  const ex = D.examples; if (!ex.length) { $("#exCard").innerHTML = "<p>No examples.</p>"; return; }
+  const tabs = $("#exTabs");
+  ex.forEach((e, i) => { const b = document.createElement("button"); b.textContent = e.direction; b.onclick = () => show(i); tabs.appendChild(b); });
+  function show(i){
+    $$("button", tabs).forEach((b, k) => b.classList.toggle("on", k === i));
+    const e = ex[i]; const [s, t] = e.direction.split("-");
+    $("#exCard").innerHTML = `
+      <div class="ex-row"><div class="who">Source · ${LANG[s]||s}</div><div class="txt">${esc(e.src)}</div><div class="sc"></div></div>
+      <div class="ex-row ref"><div class="who">Reference · ${LANG[t]||t}</div><div class="txt">${esc(e.ref)}</div><div class="sc"></div></div>
+      ${MODELS.map(m => `<div class="ex-row"><div class="who"><i class="dot" style="background:${MCOL[m]}"></i>${MLABEL[m].replace("Transformer ", "")}</div>
+        <div class="txt">${esc(e.hyp[m])}</div><div class="sc">${e.chrf[m].toFixed(1)}</div></div>`).join("")}`;
+  }
+  show(0);
+})();
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------------- error chart ---------------- */
+(function errors(){
+  const E = D.errors; if (!E || !Object.keys(E).length) return;
+  const CATS = [["reference_noise","Reference noise"],["omission","Omission"],["mistranslation","Mistranslation"],["hallucination","Hallucination"],["named_entity","Named entity / number"],["script_error","Script error"],["untranslated","Untranslated"]];
+  legend("#errLegend", MODELS.map(m => [MCOL[m], MLABEL[m].replace("Transformer ", "")]));
+  const svg = $("#errChart"); const W = 620, rowH = 46, L = 160, R = 34, T = 6; const H = T + rowH * CATS.length + 10;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const max = Math.max(...MODELS.flatMap(m => CATS.map(([c]) => E[m]?.[c] || 0)));
+  const x = v => L + (W - L - R) * v / max;
+  CATS.forEach(([c, lab], i) => { const y0 = T + i * rowH;
+    const t = el("text", {x:L-12, y:y0+rowH/2+2, "text-anchor":"end"}, svg); t.textContent = lab; t.style.fill = c === "reference_noise" ? "var(--ink3)" : "var(--ink2)"; t.style.fontSize = "12px";
+    MODELS.forEach((m, j) => { const v = E[m]?.[c] || 0, y = y0 + 7 + j * 11;
+      const r = el("rect", {x:L, y, width:Math.max(1.5, x(v)-L), height:8, rx:3, fill:MCOL[m], opacity: c === "reference_noise" ? .45 : 1}, svg);
+      const n = el("text", {x:Math.max(x(v), L+2)+6, y:y+7.5}, svg); n.textContent = v; n.style.fontSize = "10px";
+      const hit = el("rect", {x:L, y:y-1.5, width:W-L-R, height:11, class:"hit"}, svg);
+      hit.addEventListener("mousemove", ev => showTip(`<div class="t">${lab}</div><b style="color:${MCOL[m]}">${MLABEL[m]}</b><br><b>${v}</b> of the 64 worst sentences`, ev));
+      hit.addEventListener("mouseleave", hideTip); });
+  });
+})();
+
+/* ================= deck navigation ================= */
+const slides = $$(".slide"); let cur = 0;
+const nav = $("#nav");
+slides.forEach((s, i) => { const b = document.createElement("button"); b.setAttribute("aria-label", s.dataset.title);
+  b.innerHTML = `<span>${String(i+1).padStart(2,"0")} · ${s.dataset.title}</span>`; b.onclick = () => go(i); nav.appendChild(b); });
+function go(i){
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, k) => { s.classList.toggle("active", k === i); s.classList.toggle("prev", k < i); });
+  $$("button", nav).forEach((b, k) => b.classList.toggle("on", k === i));
+  $("#progress").style.width = ((i + 1) / slides.length * 100) + "%";
+  $("#count").innerHTML = `<b>${String(i+1).padStart(2,"0")}</b> / ${String(slides.length).padStart(2,"0")}`;
+  cur = i; if (location.hash !== "#" + (i + 1)) history.replaceState(null, "", "#" + (i + 1));
+  hideTip(); if (window.__scene) window.__scene.morph(slides[i].dataset.shape, i);
+}
+addEventListener("keydown", e => {
+  if (editing && e.key !== "Escape") { if (e.key === "e" && e.ctrlKey) toggleEdit(); return; }
+  if (["ArrowRight","PageDown"," ","ArrowDown"].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  else if (["ArrowLeft","PageUp","ArrowUp"].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+  else if (e.key === "Home") go(0); else if (e.key === "End") go(slides.length - 1);
+  else if (e.key === "f" || e.key === "F") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); }
+  else if (e.key === "e" || e.key === "E") toggleEdit();
+});
+addEventListener("keydown", e => { if (editing && e.key === "Escape") toggleEdit(); });
+$("#prevBtn").onclick = () => go(cur - 1); $("#nextBtn").onclick = () => go(cur + 1);
+let tx = null; addEventListener("touchstart", e => tx = e.touches[0].clientX, {passive:true});
+addEventListener("touchend", e => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 60) go(cur + (dx < 0 ? 1 : -1)); tx = null; });
+addEventListener("hashchange", () => { const n = parseInt(location.hash.slice(1)); if (n && n - 1 !== cur) go(n - 1); });
+
+/* ================= three.js background ================= */
+(function scene(){
+  if (!window.THREE) return;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canvas = $("#bg");
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setClearColor(0x060a14, 1);
+  const scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x060a14, 0.045);
+  const camera = new THREE.PerspectiveCamera(55, 1, .1, 100); camera.position.set(0, 0, 13);
+  const N = innerWidth < 700 ? 2200 : 4200;
+
+  // soft round sprite
+  const sc = document.createElement("canvas"); sc.width = sc.height = 64; const g = sc.getContext("2d");
+  const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32); grd.addColorStop(0, "rgba(255,255,255,1)"); grd.addColorStop(.35, "rgba(255,255,255,.55)"); grd.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = grd; g.fillRect(0, 0, 64, 64); const sprite = new THREE.CanvasTexture(sc);
+
+  const pos = new Float32Array(N * 3), target = new Float32Array(N * 3), col = new Float32Array(N * 3), tcol = new Float32Array(N * 3);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  const mat = new THREE.PointsMaterial({size:.085, map:sprite, vertexColors:true, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.9});
+  const points = new THREE.Points(geo, mat); scene.add(points);
+
+  // faint constellation lines between a subset of neighbours (title slide feel)
+  const LN = 220; const lgeo = new THREE.BufferGeometry(); const lpos = new Float32Array(LN * 6);
+  lgeo.setAttribute("position", new THREE.BufferAttribute(lpos, 3));
+  const lines = new THREE.LineSegments(lgeo, new THREE.LineBasicMaterial({color:0xe8c27a, transparent:true, opacity:.07, blending:THREE.AdditiveBlending, depthWrite:false}));
+  scene.add(lines);
+
+  const C = s => new THREE.Color(s);
+  const PAL = {gold:C("#e8c27a"), base:C(css("--m-base")), bt:C(css("--m-bt")), nllb:C(css("--m-nllb")), ink:C("#9fb3d9"), dim:C("#2b3a5c"), pink:C(css("--c5")), amber:C(css("--c4"))};
+  const rnd = (a=1) => (Math.random() * 2 - 1) * a;
+  const avgOf = m => { const v = shared.map(d => score(m, d)?.["chrf++"]).filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 40; };
+
+  const SHAPES = {
+    globe(i){ const phi = Math.acos(1 - 2 * (i + .5) / N), th = Math.PI * (1 + Math.sqrt(5)) * i, r = 4.6 + (Math.random() < .12 ? rnd(.9) : 0);
+      return [[r*Math.sin(phi)*Math.cos(th), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(th)], Math.random() < .08 ? PAL.gold : (Math.random() < .5 ? PAL.base : PAL.ink)]; },
+    globe2(i){ const [p, c] = SHAPES.globe(i); return [[p[0]*1.25, p[1]*1.25, p[2]*1.25], Math.random() < .5 ? PAL.gold : c]; },
+    bridge(i){ const k = i % 3; if (k === 2) { const t = Math.random(); const x = -5 + 10 * t; return [[x, Math.sin(t*Math.PI)*1.6 + rnd(.12), rnd(.35)], PAL.gold]; }
+      const cx = k ? 5 : -5, r = 1.9 * Math.cbrt(Math.random()), a = Math.random()*Math.PI*2, b = Math.acos(rnd());
+      return [[cx + r*Math.sin(b)*Math.cos(a), r*Math.cos(b), r*Math.sin(b)*Math.sin(a)], k ? PAL.bt : PAL.base]; },
+    columns(i){ const P = D.pairs.length ? D.pairs : [{splits:{train:1}}]; const k = i % P.length; const max = Math.max(...P.map(p => p.splits.train));
+      const h = 7.5 * P[k].splits.train / max; const x = (k - (P.length - 1) / 2) * 2.6;
+      return [[x + rnd(.55), -3.6 + Math.random() * h, rnd(.55)], [PAL.base, PAL.bt, PAL.nllb, PAL.amber][k % 4]]; },
+    helix(i){ const t = i / N, a = t * Math.PI * 14, s = i % 2 ? 1 : -1, x = -8 + 16 * t;
+      if (i % 7 === 0) return [[x, Math.sin(a) * 1.8 * Math.random(), Math.cos(a) * 1.8 * Math.random()], PAL.gold];
+      return [[x, s * Math.sin(a) * 1.8 + rnd(.08), s * Math.cos(a) * 1.8 + rnd(.08)], [PAL.base, PAL.bt, PAL.nllb][Math.floor(t * 3)]]; },
+    wave(i){ const g = Math.ceil(Math.sqrt(N)), gx = i % g, gz = Math.floor(i / g), x = (gx / g - .5) * 18, z = (gz / g - .5) * 12;
+      return [[x, -2.2 + Math.sin(x * .6) * .6 + Math.cos(z * .8) * .5, z], (gx + gz) % 11 === 0 ? PAL.gold : PAL.ink]; },
+    results(i){ const k = i % 3, m = MODELS[k]; const h = (avgOf(m) / 60) * 7.6; const x = (k - 1) * 3.2;
+      return [[x + rnd(.75), -3.8 + Math.pow(Math.random(), .85) * h, rnd(.75)], [PAL.base, PAL.bt, PAL.nllb][k]]; },
+    grid(i){ const k = i % 24, m = Math.floor(k / 8), d = k % 8; const s = score(MODELS[m], dirs[d] || "")?.["chrf++"] || 0;
+      const x = (d - 3.5) * 1.9, y = (1 - m) * 1.9; const r = .25 + .55 * (s / 65);
+      return [[x + rnd(r), y + rnd(r), rnd(.25)], s ? [PAL.base, PAL.bt, PAL.nllb][m] : PAL.dim]; },
+    spiral(i){ const t = i / N, a = t * Math.PI * 9, r = .4 + t * 6.2;
+      return [[Math.cos(a) * r + rnd(.2), (t - .5) * 2.2 + rnd(.2), Math.sin(a) * r * .55 + rnd(.2)], t > .7 ? PAL.nllb : (t > .35 ? PAL.amber : PAL.pink)]; },
+    ring(i){ const a = Math.random() * Math.PI * 2, R = 4.8, r = .9 * Math.sqrt(Math.random()), b = Math.random() * Math.PI * 2;
+      return [[(R + r * Math.cos(b)) * Math.cos(a), r * Math.sin(b), (R + r * Math.cos(b)) * Math.sin(a)], Math.random() < .15 ? PAL.gold : PAL.nllb]; },
+    knot(i){ const t = i / N * Math.PI * 2, p = 2, q = 3, r = Math.cos(q * t) + 2.4;
+      return [[r * Math.cos(p * t) * 1.5 + rnd(.18), r * Math.sin(p * t) * 1.5 + rnd(.18), -Math.sin(q * t) * 1.5 + rnd(.18)], Math.random() < .3 ? PAL.bt : PAL.base]; },
+    galaxy(i){ const arm = i % 3, t = Math.pow(Math.random(), .7), a = t * Math.PI * 4 + arm * (Math.PI * 2 / 3), r = t * 7;
+      return [[Math.cos(a) * r + rnd(.35 * (1 - t) + .1), rnd(.35), Math.sin(a) * r + rnd(.35 * (1 - t) + .1)], t < .15 ? PAL.gold : [PAL.base, PAL.bt, PAL.nllb][arm]]; },
+  };
+  const VIEW = { // camera tilt / rotation per shape + canvas opacity (dimmer behind dense slides)
+    globe:{rx:.15, op:1}, globe2:{rx:.1, op:1}, bridge:{rx:.05, op:.75}, columns:{rx:.08, op:.45}, helix:{rx:.3, op:.5},
+    wave:{rx:.45, op:.5}, results:{rx:.08, op:.32}, grid:{rx:0, op:.3}, spiral:{rx:.5, op:.35}, ring:{rx:.9, op:.4}, knot:{rx:.2, op:.4}, galaxy:{rx:.85, op:.6} };
+  let view = VIEW.globe, spin = 0;
+  function morph(shape){
+    const f = SHAPES[shape] || SHAPES.globe;
+    for (let i = 0; i < N; i++) { const [p, c] = f(i); target.set(p, i * 3); tcol[i*3] = c.r; tcol[i*3+1] = c.g; tcol[i*3+2] = c.b; }
+    view = VIEW[shape] || VIEW.globe; canvas.style.opacity = view.op;
+    lines.visible = shape === "globe" || shape === "globe2";
+    if (reduce) { pos.set(target); col.set(tcol); }
+  }
+  // initial scatter
+  for (let i = 0; i < N * 3; i++) pos[i] = rnd(14);
+  window.__scene = {morph};
+
+  let mx = 0, my = 0; addEventListener("pointermove", e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
+  function resize(){ renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight;
+    camera.position.z = innerWidth < 700 ? 18 : 13; camera.updateProjectionMatrix(); }
+  addEventListener("resize", resize); resize();
+
+  const clock = new THREE.Clock();
+  (function tick(){
+    const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+    const k = reduce ? 1 : 1 - Math.pow(.025, dt);  // frame-rate independent easing
+    for (let i = 0; i < N * 3; i++) { pos[i] += (target[i] - pos[i]) * k * (0.6 + (i % 7) * .07); col[i] += (tcol[i] - col[i]) * k; }
+    geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true;
+    if (lines.visible) { for (let j = 0; j < LN; j++) { const a = (j * 97) % N, b = (a + [34, 55, 89][j % 3]) % N;  /* Fibonacci-lattice neighbours = short edges */ lpos.set([pos[a*3], pos[a*3+1], pos[a*3+2], pos[b*3], pos[b*3+1], pos[b*3+2]], j * 6); } lgeo.attributes.position.needsUpdate = true; }
+    if (!reduce) spin += dt * .06;
+    points.rotation.y = lines.rotation.y = spin + mx * .35;
+    const rx = view.rx + my * .2; points.rotation.x += (rx - points.rotation.x) * .04; lines.rotation.x = points.rotation.x;
+    mat.size = .085 + Math.sin(t * 1.3) * .006;
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  })();
+})();
+
+go(Math.max(0, (parseInt(location.hash.slice(1)) || 1) - 1));
+})();
+</script>
+</body>
+</html>

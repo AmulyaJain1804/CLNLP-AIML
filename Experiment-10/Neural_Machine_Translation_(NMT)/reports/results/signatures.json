@@ -1,0 +1,6 @@
+{
+  "chrf++": "nrefs:1|case:mixed|eff:yes|nc:6|nw:2|space:no|version:2.6.0",
+  "bleu": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0",
+  "comet": "Unbabel/wmt22-comet-da (x100)",
+  "bootstrap": "n=1000, seed=42, 95% percentile CI"
+}

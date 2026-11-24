@@ -1,0 +1,46 @@
+# Stage 2 preprocessing config (owner: M2). Copied to data/processed/{pair}/preprocess_config.yaml.
+unicode_normalization: NFC
+# Zero-width chars removed; ZWJ (U+200D) / ZWNJ (U+200C) are KEPT: they carry meaning in
+# Bengali-Assamese and Devanagari orthography (e.g. ya-phala, conjunct control).
+remove_chars: ["​", "﻿", "­", "⁠"]
+collapse_whitespace: true
+
+# Filters applied to TRAIN only (dev/test are only normalized + empty pairs removed,
+# so evaluation stays comparable to the raw held-out data).
+filters:
+  min_words: 1
+  max_words: 150            # whitespace words, either side
+  max_char_ratio: 3.0       # max(len_src,len_tgt)/min(...) in characters ...
+  ratio_min_chars: 20       # ... only checked when both sides have >= this many chars
+  drop_identical: true      # drop pairs where source == target (untranslated)
+  min_script_frac: 0.5      # non-Latin X side: fraction of letters in expected script
+  dedup_train: true         # exact duplicate (src,tgt) pairs inside train
+  remove_dev_test_overlap: true  # drop train pairs whose src OR tgt occurs in dev/test
+
+expected_script:            # Unicode block name prefix used for script checking
+  as: BENGALI
+  mni: BENGALI
+  bodo: DEVANAGARI
+  mni-Mtei: MEETEI
+  lus: LATIN
+  kha: LATIN
+  njz: LATIN
+  mjw: LATIN
+  trp: LATIN
+  nag: LATIN
+  tgj: LATIN
+
+sentencepiece:
+  model_type: unigram
+  shared_vocab: true        # one joint en+X model per pair (tied embeddings, copyable names/numbers)
+  character_coverage: 1.0   # keep every Indic grapheme
+  vocab_size:
+    default: 8000
+    en-bodo: 6000
+    en-mjw: 2000
+    en-trp: 3000
+    en-nag: 3000
+    en-tgj: 4000
+  user_defined_symbols: ["<BT>"]   # tag for back-translated data (Caswell et al., 2019)
+  input_sentence_size: 2000000
+  seed: 42

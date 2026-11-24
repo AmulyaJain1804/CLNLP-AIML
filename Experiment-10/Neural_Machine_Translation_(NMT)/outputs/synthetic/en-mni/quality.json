@@ -1,0 +1,40 @@
+{
+  "pair": "en-mni",
+  "n_real_train": 20759,
+  "mono_pool_size": 178452,
+  "n_synthetic": 20759,
+  "synthetic_ratio": 1.0,
+  "generator": "baseline en-mni, beam 4",
+  "generation_time_s": 63.0,
+  "roundtrip_chrf++": 19.55,
+  "roundtrip_bleu": 2.61,
+  "roundtrip_sample": 500,
+  "avg_len_ratio_syn_over_src": 0.858,
+  "examples": [
+    {
+      "en": "Then, we'll find out what cures best .",
+      "syn": "করিগুম্বা ঐখোয়না খ্বাইদগী ফবা খ্বাইদগী ফবা অদু ফবা নত্তে ।",
+      "roundtrip": "if we are most best ."
+    },
+    {
+      "en": "“I am the Lord your God, who brought you out of the land of Egypt, out of the house of bondage.",
+      "syn": "প্রধান মন্ত্রীনা হায়খি , “ভারতকী বন্ধিগী য়ুম্বুরে, ব্রেজগী য়ুম।",
+      "roundtrip": "The Prime Minister said , “India is warm home,"
+    },
+    {
+      "en": "These were the chief officers of king Solomon , even two - hundred fifty , who ruled over the people .",
+      "syn": "মখোয় অসি চৌরানি – চামাথোই ফাওবদা কিলোমীতর চামাথোই ২১৫ শাংনা পাংথোকখি ।",
+      "roundtrip": "They are proud that they were borne by nearly 21 kilometers of Kilamma ."
+    },
+    {
+      "en": "And no sin offering , whereof any of the blood is brought into the tabernacle of the congregation to reconcile withal in the holy place , shall be eaten : it shall be burnt in the fire .",
+      "syn": "ব্লদ সুবনোংগী মফম অমত্তদা , হায়না লৌনরিবা অসি অমুক হন্না চাকখৈ , মদুনা মৈনা চাকপা হৌরগা , মদুনা মৈনা মৈনা চাকপা মফম অদুদা চামথোক্কদবনি ।",
+      "roundtrip": "when the blood sugar is not reconed , it should burn the flamed area , burn it is burned to the burn ."
+    },
+    {
+      "en": "Seek ye the Lord while he may be found , call ye upon him while he is near :",
+      "syn": "থৌরম অদুদা মহাক্না ভগবানগী সি.দি.এম.",
+      "roundtrip": "He will lay the Foundation Stone for the occasion ."
+    }
+  ]
+}

@@ -9,6 +9,11 @@ Lab Experiments for Computational Linguistics and Natural Language Processing.
 - [Experiment-3/](Experiment-3) - Stemming, Lemmatization, and Regular Expressions. For an in-depth breakdown, see the **[Experiment 3 Detailed README](Experiment-3/README.md)**.
 - [Experiment-4/](Experiment-4) - Term-Frequency Analysis, Named Entity Recognition, and TF-IDF. For an in-depth breakdown, see the **[Experiment 4 Detailed README](Experiment-4/README.md)**.
 - [Experiment-5/](Experiment-5) - Subword Tokenization (BPE & SentencePiece), POS Tagging, and Word2Vec. For an in-depth breakdown, see the **[Experiment 5 Detailed README](Experiment-5/README.md)**.
+- [Experiment-6/](Experiment-6) - GloVe Word Embeddings (from scratch & pretrained) and N-gram Language Model. For an in-depth breakdown, see the **[Experiment 6 Detailed README](Experiment-6/README.md)**.
+- [Experiment-7/](Experiment-7) - Sentiment Analysis on IMDB with Logistic Regression, LSTM, Transformer and BERT. For an in-depth breakdown, see the **[Experiment 7 Detailed README](Experiment-7/README.md)**.
+- [Experiment-8/](Experiment-8) - Abstractive Text Summarization with mT5 and mBART on Hindi XL-Sum. For an in-depth breakdown, see the **[Experiment 8 Detailed README](Experiment-8/README.md)**.
+- [CLNLP_Lab_Report.docx](CLNLP_Lab_Report.docx) - Lab report (title page, contents, and abstract / code description / code for every experiment; placeholders for Experiments 9 and 10).
+- [pyproject.toml](pyproject.toml) / [uv.lock](uv.lock) - Python dependencies managed with `uv`.
 - [LICENSE](LICENSE) - License documentation.
 - [README.md](README.md) - This documentation.
 
@@ -67,24 +72,60 @@ Using [input_sub_word_data.txt](Experiment-5/input_sub_word_data.txt) and a sepa
 * **5.6: Word2Vec Skip-Gram**: Trains Skip-Gram, shows the vector for "language" and its 5 most similar words.
 * **5.7: Cosine Similarity**: Computes similarity between word pairs (machine–learning, natural–language, deep–learning).
 
+### Experiment-6: GloVe Word Embeddings & N-gram Language Model
+*For a complete guide on how to run these, refer to the [Experiment-6 README](Experiment-6/README.md).*
+
+The notebook [Experiment_6.ipynb](Experiment-6/Experiment_6.ipynb) covers:
+* **6.1: GloVe from Scratch**: Builds a distance-weighted co-occurrence matrix from [glove_corpus.txt](Experiment-6/glove_corpus.txt) and trains GloVe (weighted least squares + AdaGrad) in NumPy; finds the words most similar to "king" (queen, son, wise, …).
+* **6.2: Pretrained GloVe (Gensim)**: Loads `glove-wiki-gigaword-100`, lists the neighbours of "king" (prince, queen, monarch, throne, …) and solves *king − man + woman ≈ queen*.
+* **6.3: N-gram Language Model**: Unigram/bigram/trigram model from scratch on [ngram_corpus.txt](Experiment-6/ngram_corpus.txt) with MLE and Laplace smoothing, next-word prediction with back-off, perplexity and text generation.
+
+### Experiment-7: Sentiment Analysis – Comparative Study
+*For a complete guide on how to run these, refer to the [Experiment-7 README](Experiment-7/README.md).*
+
+The notebook [Experiment_7.ipynb](Experiment-7/Experiment_7.ipynb) trains and compares four models on the IMDB 50K Movie Reviews dataset:
+* **Logistic Regression** on TF-IDF uni+bi-grams.
+* **Bidirectional LSTM** trained from scratch (PyTorch).
+* **Vanilla Transformer encoder** trained from scratch (PyTorch).
+* **BERT** (`bert-base-uncased`) fine-tuned for classification.
+
+Evaluation uses Accuracy, Precision, Recall, F1-score and Confusion Matrices on the full 10,000-review test set (run on a Google Colab L4 GPU):
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Logistic Regression | 0.9020 | 0.8954 | 0.9104 | 0.9028 |
+| LSTM | 0.8504 | 0.8194 | 0.8990 | 0.8573 |
+| Transformer | 0.8386 | 0.8103 | 0.8842 | 0.8456 |
+| **BERT** | **0.9252** | **0.9254** | **0.9250** | **0.9252** |
+
+### Experiment-8: Abstractive Summarization with mT5 & mBART (Hindi XL-Sum)
+*For a complete guide on how to run these, refer to the [Experiment-8 README](Experiment-8/README.md).*
+
+The notebook [Experiment_8.ipynb](Experiment-8/Experiment_8.ipynb) summarises Hindi BBC articles from the XL-Sum dataset with `csebuetnlp/mT5_multilingual_XLSum` (mT5) and `mskayacioglu/mbart-xlsum-2` (mBART-50) and compares them with ROUGE-1/2/L (Devanagari-aware tokenizer) and mBERT-based BERTScore.
+
+| Model (100 Hindi test articles) | ROUGE-1 | ROUGE-2 | ROUGE-L | mBERTScore-F1 |
+|---|---|---|---|---|
+| **mT5** | **35.96** | **15.89** | **30.48** | **76.68** |
+| mBART-50 | 35.20 | 13.71 | 29.17 | 76.34 |
+
+### Experiments 9 & 10
+*To be added.*
+
 ---
 
 ## Requirements
 
-Ensure you have the following packages installed:
-* Python 3
-* pandas
-* matplotlib
-* jupyter
-* nltk
-* spacy
-* transformers (Experiment 5)
-* sentencepiece (Experiment 5)
-* gensim (Experiment 5)
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) (`pyproject.toml` + `uv.lock`, Python 3.12). Main packages: pandas, numpy, matplotlib, seaborn, jupyter, nltk, spacy, scikit-learn, gensim, torch, transformers, datasets, sentencepiece, rouge-score, bert-score.
 
-To install the dependencies, you can run:
+Create the virtual environment (`.venv`) and install everything with:
 ```bash
-pip install pandas matplotlib jupyter nltk spacy transformers sentencepiece gensim
+uv sync
+uv run python -m spacy download en_core_web_sm   # spaCy model used in Experiments 2, 4 and 5
+```
+
+Alternatively, with pip:
+```bash
+pip install pandas numpy matplotlib seaborn jupyter nltk spacy scikit-learn gensim torch transformers datasets sentencepiece rouge-score bert-score
 python -m spacy download en_core_web_sm
 ```
 
@@ -92,6 +133,7 @@ python -m spacy download en_core_web_sm
 
 ## How to Run
 
-1. Open the desired notebook in Jupyter Notebook, JupyterLab, or VS Code.
+1. Open the desired notebook in Jupyter Notebook, JupyterLab, or VS Code (select the `.venv` kernel).
 2. Run the cells in order.
 3. Make sure the input dataset or text file is in the same directory as the notebook you are running.
+4. **Google Colab / Kaggle:** Experiments 6–8 include a setup cell that installs missing packages and fetches input files automatically. Experiments 7 and 8 are compute-heavy – choose a **GPU runtime**; the notebooks detect the GPU and switch from the reduced CPU settings (BERT training subset, number of summarised articles) to the full dataset.

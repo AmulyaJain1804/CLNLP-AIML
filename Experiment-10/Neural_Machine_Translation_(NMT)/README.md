@@ -22,11 +22,11 @@ slightly hurts the others. That is an honest negative result, explained in §8.
 ## 2. Team and contributions
 | Member | SAP ID | Role | Contribution |
 |---|---|---|---|
-| Amulya Jain | 500122439 | M1 Data collection | download, checksums, alignment checks, raw splits, `docs/SOURCES.md` (`src/data/`) |
-| Himanshu Pokhriyal | 500121200 | M2 Preprocessing & EDA | cleaning, script checks, SentencePiece, EDA figures (`src/preprocess/`, `src/eda/`) |
+| Somansh Goel | 500123667 | M1 Data collection | download, checksums, alignment checks, raw splits, `docs/SOURCES.md` (`src/data/`) |
+| Narind Verma | 500121898 | M2 Preprocessing & EDA | cleaning, script checks, SentencePiece, EDA figures (`src/preprocess/`, `src/eda/`) |
 | Anirvan Ranjan | 500119330 | M3 Baseline | Transformer, beam search, training loop, learning curve (`src/models/baseline/`) |
-| Narind Verma | 500121898 | M4 Advanced models | back-translation pipeline, NLLB-200 fine-tuning (`src/models/advanced/`) |
-| Somansh Goel | 500123667 | M5 Evaluation & integration | metrics, bootstrap/significance, error analysis, figures, report, repo (`src/eval/`, `src/viz/`) |
+| Amulya Jain | 500122439 | M4 Advanced models | back-translation pipeline, NLLB-200 fine-tuning (`src/models/advanced/`) |
+| Himanshu Pokhriyal | 500121200 | M5 Evaluation & integration | metrics, bootstrap/significance, error analysis, figures, report, repo (`src/eval/`, `src/viz/`) |
 
 Subject: Computational Linguistics and Natural Language Processing Lab · Faculty: Dr Sahinur Rehman Laskar · Institution: University of Petroleum and Energy Studies (UPES)
 

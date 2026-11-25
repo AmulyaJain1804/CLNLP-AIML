@@ -111,7 +111,7 @@ The notebook [Experiment_8.ipynb](Experiment-8/Experiment_8.ipynb) summarises Hi
 | mBART-50 | 35.20 | 13.71 | 29.17 | 76.34 |
 
 ### Experiment-9: Authorship Attribution of LLM Text (Kaggle: Name That LLM)
-*For the full method, results and file guide, refer to the [Experiment-9 README](Experiment-9/NameThatLLM/README.md).* Team: Somansh Goel, Amulya Jain.
+*For the full method, results and file guide, refer to the [Experiment-9 README](Experiment-9/NameThatLLM/README.md).* Team: Amulya Jain, Himanshu Pokhriyal, Anirvan Ranjan, Narind Verma, Somansh Goel.
 
 Given a 40–250-word passage, predict which of **18 LLMs** wrote it (balanced accuracy, chance 0.056). Test prompts are unseen, so models are evaluated with grouped 5-fold CV by prompt:
 * **[ntl_baseline.py](Experiment-9/NameThatLLM/ntl_baseline.py)**: four TF-IDF views (char, word, punctuation shape, function words) + 35 stylometric features, log-linear blend of logistic regressions; optionally trained with the 231k-passage public Open Pool.

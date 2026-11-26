@@ -1,7 +1,17 @@
 # Project: Name That LLM (Authorship Attribution of LLM Text)
 
-**Name:** Somansh Goel  
-**SAP ID:** 500123667  
+**Team:**
+
+| Member | SAP ID | Role |
+|---|---|---|
+| Himanshu Pokhriyal | 500121200 | Competition research and evaluation protocol (grouped CV, public-stack analysis) |
+| Amulya Jain | 500122439 | Iteration 1: TF-IDF + stylometry baseline and error analysis |
+| Anirvan Ranjan | 500119330 | Iteration 2: Open Pool integration, leakage checks, pool weighting |
+| Somansh Goel | 500123667 | Iteration 3: LoRA reader design and training on the UPES HPC |
+| Narind Verma | 500121898 | Kaggle T4 inference, parity check, stack integration, leaderboard analysis |
+
+The Kaggle notebooks and datasets referenced below live under Somansh's Kaggle account (`somanshgoel`), which the team used for all runs and submissions.
+
 **Competition:** [Kaggle: Name That LLM](https://www.kaggle.com/competitions/name-that-llm)
 
 ## Objective
@@ -88,7 +98,7 @@ The project ran in three iterations. Each iteration fed into the next.
 
 ## Conclusions
 1. **Grouped evaluation is essential.** With random splits, train and test share prompts, and the score measures topic memory rather than style.
-2. **For TF-IDF, extra data beat model changes.** The 231k-passage pool raised TF-IDF from 0.375 to 0.503 and the LoRA reader from 0.575 to 0.623.
+2. **For TF-IDF, extra data beat model changes.** The 231k-passage pool raised TF-IDF from 0.375 to 0.503 (0.389 → 0.514 with stylometry) and the LoRA reader from 0.575 to 0.623.
 3. **LoRA readers on intermediate layers clearly beat n-grams:** 0.623 against 0.523 on the same holdout. Ensembling different readers helps further.
 4. **The hardest distinctions are between sibling models,** such as glm-5.3 vs glm-5.3-flash and the gpt-5.6 variants, and between GLM and Claude.
 5. **A good offline score doesn't guarantee a gain inside a strong ensemble.** A member that scores well alone can still lower the stack's leaderboard score.
